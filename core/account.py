@@ -17,7 +17,6 @@ from urllib.parse import quote, unquote
 
 import requests
 import streamlit as st
-import streamlit.components.v1 as components
 
 from core.photos import secret
 
@@ -104,8 +103,8 @@ def remove_home(home_key):
 # is kept in a short-lived browser cookie and saved once they are back and signed in.
 
 def remember_pending(search_text):
-    components.html(f"<script>window.parent.document.cookie = '{PENDING_COOKIE}={quote(search_text)}; "
-                    "path=/; max-age=900; SameSite=Lax';</script>", height=0)
+    st.html(f"<script>document.cookie = '{PENDING_COOKIE}={quote(search_text)}; path=/; max-age=900; "
+            "SameSite=Lax';</script>", unsafe_allow_javascript=True)
 
 
 def take_pending():
@@ -114,6 +113,6 @@ def take_pending():
     if not value or not signed_in() or st.session_state.get("pending_taken"):
         return None
     st.session_state["pending_taken"] = True
-    components.html(f"<script>window.parent.document.cookie = '{PENDING_COOKIE}=; path=/; max-age=0';</script>",
-                    height=0)
+    st.html(f"<script>document.cookie = '{PENDING_COOKIE}=; path=/; max-age=0';</script>",
+            unsafe_allow_javascript=True)
     return unquote(value)

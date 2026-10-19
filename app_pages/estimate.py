@@ -27,10 +27,20 @@ EXAMPLE_ADDRESS = "2618 Jasper St, Philadelphia, PA 19125"
 PICK_PAGE = 12
 DETAIL_DEFAULTS = {"beds": 3, "baths": 1, "sqft": 1200, "year": 1925, "condition": 4}
 
-# A search can be started from another page (Find homes) by setting "search_request".
+# Each search is kept in the address bar as ?q=..., so the browser's Back and Forward buttons step
+# through searches. Another page can also start one with "search_request" or the q parameter.
 if "search_request" in st.session_state:
     st.session_state["query"] = st.session_state.pop("search_request")
     st.session_state["pending_search"] = True
+elif st.query_params.get("q") != st.session_state.get("shown_q"):
+    url_query = st.query_params.get("q")
+    if url_query:
+        st.session_state["query"] = url_query
+        st.session_state["pending_search"] = True
+    else:
+        for key in ["result", "home", "matches", "typed_address", "streets", "lookup", "shown_q"]:
+            st.session_state.pop(key, None)
+        st.session_state["query"] = ""
 
 
 def nice_address(address, zip_code=None):
@@ -101,6 +111,9 @@ def run_search(query):
         st.session_state["lookup"] = None
         note("Type a street address, like <b>2618 Jasper St</b>, or just a street name, like <b>Jasper St</b>.")
         return
+    st.session_state["shown_q"] = query
+    if st.query_params.get("q") != query:
+        st.query_params["q"] = query
     with st.spinner("Looking up the home…"):
         matches = ins.find_homes(query)
         if matches.empty:
@@ -211,7 +224,9 @@ def signin_prompt(home, title):
 
 
 def pick_home(home):
-    st.session_state["picked_home"] = home
+    """Clicking a home card searches its exact address, so it gets its own step in the browser history."""
+    st.session_state["query"] = nice_address(home["address"], f"{home['zip_code']:.0f}")
+    st.session_state["pending_search"] = True
     st.session_state["scroll_to_price"] = True
 
 
@@ -344,7 +359,7 @@ ui.hero("What's this Philly home <em>worth today?</em>",
 
 with st.container(key="search_card"):
     with st.form("search_form", border=False):
-        col_input, col_button = st.columns([4.2, 1.2], vertical_alignment="center")
+        col_input, col_button = st.columns([4, 1.35], vertical_alignment="center")
         query = col_input.text_input("Search an address", key="query", label_visibility="collapsed",
                                      placeholder="Enter a Philadelphia address, like 2618 Jasper St")
         searched = col_button.form_submit_button("Search", type="primary", icon=":material/search:")
@@ -357,10 +372,6 @@ if searched or st.session_state.pop("pending_search", False):
     run_search(st.session_state.get("query", ""))
 
 lookup = st.session_state.get("lookup")
-
-if st.session_state.get("picked_home"):
-    select_home(st.session_state.pop("picked_home"))
-    lookup = st.session_state.get("lookup")
 
 if lookup in ("units", "pick"):
     matches = pd.DataFrame(st.session_state["matches"])
@@ -436,8 +447,8 @@ if result:
                 '<nav class="pp-tabs">' + "".join(f'<a href="#pp-{k}">{v}</a>' for k, v in tabs) + "</nav>",
                 unsafe_allow_html=True)
     if st.session_state.pop("scroll_to_price", False):
-        components.html("<script>setTimeout(() => window.parent.document.getElementById('pp-price')"
-                        "?.scrollIntoView({behavior: 'smooth'}), 250);</script>", height=0)
+        st.html("<script>setTimeout(() => document.getElementById('pp-price')"
+                "?.scrollIntoView({behavior: 'smooth', block: 'start'}), 300);</script>", unsafe_allow_javascript=True)
 
     d = st.session_state.get("used_details", details_now())
     sold = result.get("last_sale")
@@ -570,7 +581,8 @@ if result:
                     '</div></div>', unsafe_allow_html=True)
                 st.button(f"Estimate {nice_address(c.address)}", key=f"comp_open_{i}", on_click=open_comp,
                           args=(c.address, int(c.zip_code) if c.zip_code == c.zip_code else None))
-        st.page_link("app_pages/find_homes.py", label="Browse more sold homes", icon=":material/arrow_forward:")
+        with st.container(key="browse_more"):
+            st.page_link("app_pages/find_homes.py", label="Browse more sold homes", icon=":material/arrow_forward:")
 
     ui.section("The neighborhood", ins.tract_label(location["GEOID"]), anchor="area")
     ui.stat_cards([

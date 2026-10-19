@@ -11,10 +11,6 @@ from core.ui import money, money_short
 ui.hero("Saved homes", "Homes you saved, with the estimate from the day you saved them.", compact=True)
 
 
-def open_home(address):
-    st.session_state["search_request"] = address
-
-
 if not account.enabled():
     st.info("Saved homes aren't switched on for this site yet.", icon=":material/info:")
 elif not account.signed_in():
@@ -49,8 +45,8 @@ else:
                         '</div></div>', unsafe_allow_html=True)
                     c1, c2 = st.columns(2)
                     if c1.button("Today's estimate", key=f"open_{home['home_key']}", width="stretch",
-                                 on_click=open_home, args=(home["address"],), type="primary"):
-                        st.switch_page("app_pages/estimate.py")
+                                 type="primary"):
+                        st.switch_page("app_pages/estimate.py", query_params={"q": home["address"]})
                     if c2.button("Remove", key=f"remove_{home['home_key']}", width="stretch",
                                  icon=":material/delete:"):
                         account.remove_home(home["home_key"])

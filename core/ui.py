@@ -104,7 +104,11 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-search_card [data-testid="stTextInputRootElement"] {{ border: none !important; background: transparent !important; }}
 .st-key-search_card [data-testid="stTextInput"] input {{ font-size: 1.15rem; padding: 14px 4px; background: transparent; }}
 .st-key-search_card [data-testid="InputInstructions"] {{ display: none; }}
-.st-key-search_card [data-testid="stFormSubmitButton"] button {{ padding: 0.95rem 1.6rem; white-space: nowrap; width: 100%; }}
+.st-key-search_card [data-testid="stFormSubmitButton"] button {{ padding: 0 1.6rem; min-height: 60px; font-size: 1.15rem;
+    white-space: nowrap; width: 100%; }}
+.st-key-search_card [data-testid="stFormSubmitButton"] button p {{ font-size: 1.15rem; }}
+.st-key-search_card [data-testid="stFormSubmitButton"] button [data-testid="stIconMaterial"] {{ font-size: 1.4rem; }}
+.st-key-browse_more {{ margin-top: 16px; }}
 .st-key-search_card [data-testid="stFormSubmitButton"] button p {{ white-space: nowrap; }}
 .st-key-hero_extras {{ max-width: 800px; margin: 0 auto; position: relative; z-index: 5; text-align: center;
                       flex: 0 1 auto !important; height: fit-content !important; gap: 0 !important; }}

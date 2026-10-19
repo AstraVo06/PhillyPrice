@@ -110,8 +110,8 @@ with results:
                         unsafe_allow_html=True)
                     if st.button("Estimate this home", key=f"estimate_{home.Index}", icon=":material/sell:",
                                  width="stretch"):
-                        st.session_state["search_request"] = f"{string.capwords(home.address.lower())}, Philadelphia, PA {home.zip_code}"
-                        st.switch_page("app_pages/estimate.py")
+                        st.switch_page("app_pages/estimate.py", query_params={
+                            "q": f"{string.capwords(home.address.lower())}, Philadelphia, PA {home.zip_code}"})
         if len(found) > len(shown):
             if st.button(f"Show more homes ({len(found) - len(shown):,} left)", width="stretch"):
                 st.session_state["find_shown"] += PAGE

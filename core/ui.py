@@ -95,14 +95,14 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-hero.pp-compact h1 {{ font-size: clamp(2rem, 4.5vw, 3.3rem); }}
 
 /* Address search inside the home hero */
-.pp-hero.pp-home {{ min-height: 500px; padding: 70px 24px 160px; }}
+.pp-hero.pp-home {{ min-height: 520px; padding: 70px 24px 186px; }}
 .pp-hero.pp-home h1 {{ font-size: clamp(2.2rem, 5.2vw, 4.1rem); }}
 .st-key-search_card {{
     background: #fff; border-radius: 999px; padding: 8px 8px 8px 22px; border: none;
     box-shadow: 0 22px 60px rgba(8,12,20,0.35); max-width: 800px; width: 100%; margin: 0 auto;
     position: relative; z-index: 5; flex: 0 1 auto !important; height: fit-content !important; align-self: flex-start;
 }}
-[data-testid="stLayoutWrapper"]:has(> .st-key-search_card) {{ margin-top: -154px; position: relative; z-index: 5; }}
+[data-testid="stLayoutWrapper"]:has(> .st-key-search_card) {{ margin-top: -180px; position: relative; z-index: 5; }}
 .st-key-search_card [data-testid="stForm"] {{ border: none; padding: 0; }}
 .st-key-search_card [data-testid="stTextInput"] div[data-baseweb="input"],
 .st-key-search_card [data-testid="stTextInput"] div[data-baseweb="base-input"],
@@ -124,7 +124,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-hero_extras .stButton, .st-key-hero_extras [data-testid="stElementContainer"] {{ display: flex; justify-content: center; width: 100% !important; }}
 .pp-trust {{ color: rgba(255,255,255,0.88); font-size: 0.92rem; text-align: center; }}
 .pp-trust b {{ color: #fff; }}
-.st-key-details_card {{
+.st-key-details_card, .st-key-bydetails_card {{
     background: #fff; border-radius: 22px; padding: 22px 26px 8px; border: 1px solid {LINE};
     box-shadow: 0 12px 34px rgba(12,17,28,0.10); margin-top: 26px;
 }}
@@ -325,6 +325,16 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-est .meta span {{ color: {MUTED}; font-size: 0.8rem; }}
 .pp-compline {{ border-left: 4px solid {BLUE}; padding: 4px 0 4px 16px; margin: 26px 0 14px; color: {INK}; line-height: 1.65; }}
 
+/* Price by details result */
+.pp-detail-result {{ border-left: 5px solid {GOLD}; background: {PAPER}; border-radius: 0 14px 14px 0; padding: 18px 22px;
+                    margin-top: 14px; }}
+.pp-detail-result .k {{ color: {MUTED}; font-size: 0.9rem; }}
+.pp-detail-result .v {{ font-family: 'Archivo', sans-serif; font-stretch: 110%; font-weight: 800; font-size: 2.6rem;
+                       letter-spacing: -0.04em; color: {INK}; line-height: 1.1; margin: 4px 0 6px; }}
+.pp-detail-result .r {{ color: {INK}; }}
+.pp-detail-result .n {{ color: {MUTED}; font-size: 0.88rem; margin-top: 8px; line-height: 1.55; }}
+.pp-trust a {{ color: #fff !important; text-decoration: underline; }}
+
 /* Notes and clickable cards */
 .pp-note {{ max-width: 800px; margin: 10px auto 0; padding: 12px 18px; border-radius: 14px; background: #fff; color: {INK};
            border-left: 5px solid {GOLD}; box-shadow: 0 10px 30px rgba(8,12,20,0.18); position: relative; z-index: 5; }}
@@ -487,7 +497,7 @@ def footer():
     <div><p><b style="color:#fff">Explore</b></p>
       <p><a href="/" target="_self">Get an estimate</a><br><a href="/find_homes" target="_self">Find homes</a><br>
       <a href="/market_map" target="_self">Market map</a><br>
-      <a href="/price_trends" target="_self">Price trends</a><br><a href="/how_it_works" target="_self">How it works</a><br>
+      <a href="/price_trends" target="_self">Price trends</a><br><a href="/insights" target="_self">Insights</a><br><a href="/how_it_works" target="_self">How it works</a><br>
       <a href="/about" target="_self">About</a><br><a href="/privacy" target="_self">Privacy</a> ·
       <a href="/terms" target="_self">Terms</a></p></div>
     <div><p><b style="color:#fff">Data</b></p>

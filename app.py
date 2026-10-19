@@ -12,13 +12,14 @@ estimate = st.Page("app_pages/estimate.py", title="Estimate", default=True)
 find_homes = st.Page("app_pages/find_homes.py", title="Find homes")
 market_map = st.Page("app_pages/market_map.py", title="Market map")
 price_trends = st.Page("app_pages/price_trends.py", title="Price trends")
+insights_page = st.Page("app_pages/insights.py", title="Insights", url_path="insights")
 how_it_works = st.Page("app_pages/how_it_works.py", title="How it works")
 about = st.Page("app_pages/about.py", title="About")
 saved = st.Page("app_pages/saved.py", title="Saved homes", url_path="saved")
 privacy = st.Page("app_pages/privacy.py", title="Privacy", url_path="privacy")
 terms = st.Page("app_pages/terms.py", title="Terms", url_path="terms")
 
-current = st.navigation([estimate, find_homes, market_map, price_trends, how_it_works, about, saved, privacy, terms], position="hidden")
+current = st.navigation([estimate, find_homes, market_map, price_trends, insights_page, how_it_works, about, saved, privacy, terms], position="hidden")
 
 # Back from Google sign-in with a home the visitor wanted to save: open it and save it.
 pending = account.take_pending()
@@ -41,5 +42,5 @@ if (not st.session_state.get("entered") and not account.signed_in() and current.
     st.stop()
 st.session_state["entered"] = True
 
-ui.navbar(estimate, [find_homes, market_map, price_trends, how_it_works, about], saved, current)
+ui.navbar(estimate, [find_homes, market_map, price_trends, insights_page, how_it_works, about], saved, current)
 current.run()

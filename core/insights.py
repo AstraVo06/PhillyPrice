@@ -527,3 +527,104 @@ def neighborhood(location):
         "tract_sales": tract_stats["sales"].get(location["GEOID"]),
         "zip_median_price": zip_stats["median_price"].get(zip_code),
     }
+
+
+# --------------------------------------------------
+# Price a home by its details and neighborhood (no address)
+# --------------------------------------------------
+
+@lru_cache(maxsize=1)
+def neighborhood_locations():
+    """Neighborhood name -> one location per census tract in it (most common ZIP, middle of its homes)."""
+    homes = load_homes()
+    homes = homes[homes["GEOID"].isin(set(mb.tract_lookup["GEOID"]))]
+    tracts = homes.groupby("GEOID").agg(zip_code=("zip_code", lambda z: z.mode().iat[0]),
+                                        lat=("lat", "median"), lon=("lon", "median"), homes=("lat", "size"))
+    tracts = tracts[tracts["homes"] >= 25].join(load_tract_names()["neighborhood"], how="inner")
+    places = {}
+    for geoid, t in tracts.iterrows():
+        places.setdefault(t["neighborhood"], []).append({
+            "GEOID": geoid, "zip_code": str(int(t["zip_code"])), "latitude": t["lat"], "longitude": t["lon"],
+            "distance_city_hall_miles": mb.calculate_city_hall_distance(latitude=t["lat"], longitude=t["lon"]),
+        })
+    return dict(sorted(places.items()))
+
+
+def price_by_details(neighborhood, living_area, bedrooms, bathrooms, interior_condition, year_built):
+    """The model's price for this home in each part of the neighborhood; the middle one is the estimate."""
+    locations = neighborhood_locations()[neighborhood]
+    prices = sorted(quick_price(loc, living_area, bedrooms, bathrooms, interior_condition, year_built)
+                    for loc in locations)
+    price = float(np.median(prices))
+    low, high = price_range(None, price)
+    return {"price": price, "low": low, "high": high, "areas": len(prices), "cheapest_area": prices[0],
+            "priciest_area": prices[-1], "zips": sorted({loc["zip_code"] for loc in locations})}
+
+
+# --------------------------------------------------
+# Insights for agents
+# --------------------------------------------------
+
+DRIVER_GROUPS = {
+    "Location": ["distance_city_hall_miles", "zip_code", "median_household_income", "median_gross_rent",
+                 "owner_occupied_pct"],
+    "Size (living area)": ["total_livable_area"],
+    "Market timing": ["mortgage_rate", "sale_month", "sale_year"],
+    "Age of the home": ["house_age"],
+    "Bathrooms": ["number_of_bathrooms"],
+    "Condition inside": ["interior_condition"],
+    "Bedrooms": ["number_of_bedrooms"],
+}
+DRIVER_NAMES = {
+    "total_livable_area": "Living area", "distance_city_hall_miles": "Distance from City Hall",
+    "zip_code": "ZIP code", "median_household_income": "Neighborhood income", "mortgage_rate": "Mortgage rate",
+    "sale_month": "Month of sale", "house_age": "Age of the home", "median_gross_rent": "Neighborhood rent",
+    "number_of_bathrooms": "Bathrooms", "sale_year": "Year of sale", "interior_condition": "Condition inside",
+    "owner_occupied_pct": "Share of owners in the area", "number_of_bedrooms": "Bedrooms",
+}
+
+
+@lru_cache(maxsize=1)
+def price_drivers():
+    """Share of the model's decisions that use each input (Random Forest importance), by input and by group."""
+    preprocessor, forest = mb.model.named_steps["preprocessor"], mb.model.named_steps["model"]
+    names = [_original_feature(n) for n in preprocessor.get_feature_names_out()]
+    by_input = pd.Series(forest.feature_importances_, index=names).groupby(level=0).sum() * 100
+    by_group = pd.Series({group: by_input.reindex(cols).sum() for group, cols in DRIVER_GROUPS.items()})
+    return by_group.sort_values(ascending=False), by_input.rename(DRIVER_NAMES).sort_values(ascending=False)
+
+
+@lru_cache(maxsize=4)
+def neighborhood_ranking(since_year=2024, min_sales=40):
+    """Median sale price and price per square foot by neighborhood, for neighborhoods with enough sales."""
+    sales = market_sales()
+    sales = sales[sales["year"] >= since_year].copy()
+    sales["neighborhood"] = sales["GEOID"].astype(str).map(load_tract_names()["neighborhood"])
+    ranked = sales.groupby("neighborhood").agg(sales=("sale_price", "size"), median_price=("sale_price", "median"),
+                                               price_per_sqft=("price_per_sqft", "median"))
+    return ranked[ranked["sales"] >= min_sales].sort_values("median_price", ascending=False)
+
+
+@lru_cache(maxsize=1)
+def price_gaps(since_year=2024):
+    """Typical prices across distance, neighborhood income, and condition, plus the yearly city median."""
+    sales = market_sales()
+    recent = sales[sales["year"] >= since_year].copy()
+    income = mb.tract_lookup.set_index("GEOID")["median_household_income"]
+    recent["income"] = recent["GEOID"].astype(str).map(income)
+    distance = pd.cut(recent["distance_city_hall_miles"], [0, 2, 4, 6, 9, 30],
+                      labels=["Under 2 mi", "2–4 mi", "4–6 mi", "6–9 mi", "Over 9 mi"])
+    income_q = pd.qcut(recent["income"], 4, labels=["Lowest-income 25%", "Second 25%", "Third 25%",
+                                                    "Highest-income 25%"])
+    conditions = {1: "New", 2: "Updated", 3: "Above average", 4: "Average", 5: "Below average",
+                  6: "Major damage", 7: "Not livable"}
+    by_condition = (recent[recent["interior_condition"].isin(conditions)]
+                    .groupby("interior_condition")["price_per_sqft"].median().rename(index=conditions))
+    return {
+        "city_median": float(recent["sale_price"].median()),
+        "city_ppsf": float(recent["price_per_sqft"].median()),
+        "distance": recent.groupby(distance, observed=True)["sale_price"].median(),
+        "income": recent.groupby(income_q, observed=True)["sale_price"].median(),
+        "condition": by_condition,
+        "yearly": sales.groupby("year")["sale_price"].median(),
+    }

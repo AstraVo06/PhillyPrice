@@ -354,7 +354,8 @@ def details_inputs():
 # --------------------------------------------------
 
 ui.hero("What's this Philly home <em>worth today?</em>",
-        "Search any address to see a suggested list price, a realistic range, and similar homes that sold nearby.",
+        "For Philadelphia agents pricing a listing, and buyers or homeowners checking a price. Search any address "
+        "to see a suggested list price, a realistic range, and similar homes that sold nearby.",
         home=True)
 
 with st.container(key="search_card"):
@@ -367,6 +368,9 @@ with st.container(key="hero_extras"):
     st.markdown(f'<div class="pp-trust">Free · No account needed · <b>{len(ins.load_homes()):,}</b> Philadelphia homes '
                 "in our search</div>", unsafe_allow_html=True)
     st.button("Just looking? Try an example home", type="tertiary", on_click=fill_example)
+    if not st.session_state.get("shown_q") and not st.session_state.get("pending_search"):
+        st.markdown('<div class="pp-trust"><a href="#pp-details">No address? Price a home by its details</a></div>',
+                    unsafe_allow_html=True)
 
 if searched or st.session_state.pop("pending_search", False):
     run_search(st.session_state.get("query", ""))
@@ -603,6 +607,47 @@ if result:
 # --------------------------------------------------
 
 if not result and lookup not in ("units", "pick", "notfound"):
+    ui.section("Price a home by its details",
+               "No address yet? Pick a neighborhood and describe the home, and get the model's predicted price.",
+               anchor="details")
+    with st.container(key="bydetails_card"), st.form("by_details_form", border=False):
+        hood_col, size_col = st.columns([1.4, 1])
+        hood = hood_col.selectbox("Neighborhood", list(ins.neighborhood_locations()), index=None,
+                                  placeholder="Type or pick a neighborhood, like Fishtown", key="bd_hood")
+        size_col.number_input("Living area (square feet)", 300, 10000, 1200, step=50, key="bd_sqft")
+        c1, c2, c3 = st.columns([1, 1, 1])
+        c1.segmented_control("Bedrooms", [1, 2, 3, 4, 5, 6], default=3, key="bd_beds",
+                             format_func=lambda n: "6+" if n == 6 else str(n))
+        c2.segmented_control("Bathrooms", [1, 2, 3, 4], default=1, key="bd_baths",
+                             format_func=lambda n: "4+" if n == 4 else str(n))
+        c3.number_input("Year built", 1750, datetime.date.today().year, 1925, key="bd_year")
+        st.select_slider("Condition inside the home", options=list(CONDITION_CHOICES), value=4, key="bd_condition",
+                         format_func=lambda c: CONDITION_CHOICES[c])
+        if st.form_submit_button("Get predicted price", type="primary", icon=":material/calculate:"):
+            if not hood:
+                note("Pick a neighborhood first.")
+                st.session_state.pop("by_details", None)
+            else:
+                details = {k: st.session_state[f"bd_{k}"] or v for k, v in
+                           {"sqft": 1200, "beds": 3, "baths": 1, "year": 1925, "condition": 4}.items()}
+                st.session_state["by_details"] = (hood, details, ins.price_by_details(
+                    hood, details["sqft"], details["beds"], details["baths"], details["condition"], details["year"]))
+    if st.session_state.get("by_details"):
+        hood, d, est = st.session_state["by_details"]
+        spread = (f"Across the {est['areas']} parts of {hood} we price, the same home ranges from "
+                  f"{money_short(est['cheapest_area'])} to {money_short(est['priciest_area'])}. "
+                  if est["areas"] > 1 else "")
+        st.markdown(f"""
+<div class="pp-detail-result">
+  <div class="k">Predicted price · {d['beds']} bd · {d['baths']} ba · {d['sqft']:,} sq ft · built {d['year']} ·
+    {CONDITION_CHOICES[d['condition']].lower()} · {hood}</div>
+  <div class="v">{money(est['price'])}</div>
+  <div class="r">Likely range <b>{money_short(est['low'])} – {money_short(est['high'])}</b>.
+    8 in 10 similar homes sold within this range in 2025–26.</div>
+  <div class="n">{spread}For a specific home, search its address above: the estimate then uses its exact location
+    and adds nearby sales.</div>
+</div>""", unsafe_allow_html=True)
+
     ui.section("Just looking? Start with one of these",
                "Homes that sold recently around Philadelphia. Click one to see what it would list for today.",
                anchor="explore")

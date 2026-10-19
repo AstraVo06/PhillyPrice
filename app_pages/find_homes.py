@@ -24,8 +24,9 @@ sales = ins.market_sales()
 filters, results = st.columns([1, 2.7], gap="medium")
 with filters:
     with st.container(border=True):
-        st.markdown("**ZIP codes**")
-        zips = st.multiselect("ZIP codes", sorted(sales["zip_code"].unique()), placeholder="Any ZIP code",
+        st.markdown("**Neighborhood or ZIP code**")
+        zips = st.multiselect("ZIP codes", sorted(sales["zip_code"].unique()), placeholder="Any area",
+                              format_func=ins.zip_label,
                               label_visibility="collapsed")
         st.markdown("**Sale price**")
         low_price, high_price = st.select_slider("Sale price", PRICE_STEPS, value=(PRICE_STEPS[0], PRICE_STEPS[-1]),
@@ -104,7 +105,7 @@ with results:
                         f'<div class="pp-comp">{photos.picture_html(home.lat, home.lon, 150)}'
                         f'<div class="body"><div class="price">Sold {money(home.sale_price)}</div>'
                         f'<div class="addr">{string.capwords(home.address.lower())}</div>'
-                        f'<div class="sub">{home.sale_date:%b %Y} · ZIP {home.zip_code}</div>'
+                        f'<div class="sub">{home.sale_date:%b %Y} · {ins.zip_label(home.zip_code)}</div>'
                         f'<div class="feat">{home.number_of_bedrooms:.0f} bd · {home.number_of_bathrooms:.0f} ba · '
                         f'{home.total_livable_area:,.0f} sq ft · built {home.year_built:.0f}</div></div></div>',
                         unsafe_allow_html=True)

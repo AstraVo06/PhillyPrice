@@ -32,10 +32,10 @@ with panel:
         first_year, last_year = st.select_slider("Years of sales", options=list(range(2019, 2027)),
                                                  value=(2019, 2026), label_visibility="collapsed",
                                                  disabled=not is_sales)
-        st.markdown("**Jump to a ZIP code**")
+        st.markdown("**Jump to an area**")
         centers = ins.zip_centers()
         zoom_zip = st.selectbox("Jump to a ZIP code", ["All of Philadelphia"] + [str(z) for z in centers.index],
-                                label_visibility="collapsed")
+                                label_visibility="collapsed", format_func=ins.zip_label)
         st.caption("Data: city sales records for single-family homes, and the Census Bureau's 2024 "
                    "American Community Survey for income, rent, and homeownership.")
 
@@ -128,16 +128,17 @@ a higher {what}. Point at an area to see its neighborhood, ZIP code, and the num
         st.caption(f"Blank areas had fewer than {MIN_SALES} sales in the years picked. Sales where several homes "
                    "changed hands for one total price are left out.")
 
-ui.section("Most and least expensive ZIP codes", "Typical single-family sale price, 2019–2026.")
+ui.section("Most and least expensive areas", "Typical single-family sale price by ZIP code, 2019–2026. "
+           "Each ZIP is named for its main neighborhoods.")
 zips = ins.load_zip_stats()
 ranked = zips[zips["sales"] >= 100].sort_values("median_price")
 left, right = st.columns(2, gap="large")
 for col, title, rows, color in [(left, "Most expensive", ranked.tail(10).iloc[::-1], ui.BLUE),
                                 (right, "Most affordable", ranked.head(10), ui.GOLD)]:
     bar = go.Figure(go.Bar(
-        x=rows["median_price"], y=rows["zip_code"].astype(str), orientation="h", marker_color=color,
+        x=rows["median_price"], y=rows["zip_code"].map(ins.zip_label), orientation="h", marker_color=color,
         text=rows["median_price"].map(money), textposition="outside", cliponaxis=False,
-        hovertemplate="ZIP %{y}<br>%{text}<extra></extra>"))
+        hovertemplate="%{y}<br>%{text}<extra></extra>"))
     bar.update_layout(title=dict(text=title, x=0), height=430, margin=dict(l=0, r=80, t=40, b=0),
                       yaxis=dict(autorange="reversed", type="category"), xaxis=dict(visible=False),
                       plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")

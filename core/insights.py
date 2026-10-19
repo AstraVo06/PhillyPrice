@@ -77,7 +77,33 @@ def load_tract_stats():
 def load_tract_names():
     names = pd.read_csv(os.path.join(DATA_DIR, "tract_names.csv"), dtype={"GEOID": str})
     names["zip_code"] = names["zip_code"].astype("Int64").astype(str).replace("<NA>", "")
+    # The city's file lists some names last-word-first ("Kensington, Old"); show them the usual way.
+    names["neighborhood"] = names["neighborhood"].str.replace(r"^(.+), (.+)$", r"\2 \1", regex=True)
     return names.set_index("GEOID")
+
+
+@lru_cache(maxsize=1)
+def zip_names():
+    """ZIP code -> its main neighborhood, plus a second one when it holds at least a quarter of the homes."""
+    homes = load_homes()
+    hoods = homes["GEOID"].astype(str).map(load_tract_names()["neighborhood"])
+    names = {}
+    for zip_code, group in hoods.groupby(homes["zip_code"]):
+        shares = group.value_counts(normalize=True)
+        top = list(shares.index[:2]) if len(shares) > 1 and shares.iloc[1] >= 0.25 else list(shares.index[:1])
+        if len(top) == 2 and len(top[0].split(" ", 1)) == 2 and top[0].split(" ", 1)[1] == top[1].split(" ", 1)[-1] \
+                and " " in top[1]:
+            top = [top[0].split(" ", 1)[0], top[1]]  # "East Mount Airy & West Mount Airy" -> "East & West Mount Airy"
+        names[int(zip_code)] = " & ".join(top)
+    return names
+
+
+def zip_label(zip_code):
+    """'Chestnut Hill · 19118'"""
+    if zip_code in (None, "All of Philadelphia"):
+        return "All of Philadelphia"
+    name = zip_names().get(int(zip_code))
+    return f"{name} · {int(zip_code)}" if name else f"ZIP {int(zip_code)}"
 
 
 def tract_label(geoid):
@@ -132,7 +158,7 @@ def area_trend(metric, areas):
     for area in areas:
         subset = sales if area == "All of Philadelphia" else sales[sales["zip_code"] == int(area)]
         yearly = subset.groupby("year")[column].agg(how)
-        rows += [{"area": area if area == "All of Philadelphia" else f"ZIP {area}", "year": year, "value": value}
+        rows += [{"area": zip_label(area), "year": year, "value": value}
                  for year, value in yearly.items()]
     return pd.DataFrame(rows)
 

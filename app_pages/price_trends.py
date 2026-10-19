@@ -33,7 +33,7 @@ else:
     zip_options = [str(z) for z in sorted(ins.zip_centers().index)]
     areas = st.multiselect("Compare areas (up to 5)", ["All of Philadelphia"] + zip_options,
                            default=["All of Philadelphia", "19125", "19146"], max_selections=5,
-                           help="Type a ZIP code to find it.")
+                           format_func=ins.zip_label, help="Type a neighborhood or ZIP code to find it.")
     if not areas:
         st.info("Pick at least one area to see the chart.")
     else:

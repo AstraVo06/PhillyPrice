@@ -54,8 +54,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-navbar [data-testid="stHorizontalBlock"] {{ align-items: center; flex-wrap: nowrap; gap: 2px; overflow-x: auto; }}
 .st-key-navbar [data-testid="stColumn"] {{ width: auto !important; flex: 0 0 auto !important; min-width: 0 !important; }}
 .st-key-navbar [data-testid="stColumn"]:nth-child(2) {{ flex: 1 1 auto !important; }}
-.st-key-navbar [data-testid="stPageLink"] a {{ border-radius: 999px; padding: 6px 14px; }}
-.st-key-navbar [data-testid="stPageLink"] a p {{ font-weight: 600; color: {INK}; font-size: 0.98rem; white-space: nowrap; }}
+.st-key-navbar [data-testid="stPageLink"] a {{ border-radius: 999px; padding: 6px 9px; }}
+.st-key-navbar [data-testid="stPageLink"] a p {{ font-weight: 600; color: {INK}; font-size: 0.95rem; white-space: nowrap; }}
 .st-key-nav_logo [data-testid="stPageLink"] a {{ padding-left: 0; background: transparent !important; }}
 .st-key-nav_logo [data-testid="stPageLink"] a p {{ font-size: 1.5rem !important; font-weight: 800 !important; color: {NAVY} !important; letter-spacing: -0.03em; }}
 .st-key-nav_logo [data-testid="stIconMaterial"] {{ color: {GOLD}; font-size: 1.9rem; width: 1.9rem; height: 1.9rem;
@@ -67,6 +67,9 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-nav_cta [data-testid="stPageLink"] a {{ background: {GOLD} !important; box-shadow: none !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a p {{ color: {INK} !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a:hover {{ background: {GOLD_DARK} !important; }}
+@media (max-width: 1100px) {{
+    .st-key-navbar [data-testid="stPageLink"] a p {{ font-size: 0.88rem; }}
+}}
 @media (max-width: 900px) {{
     .st-key-nav_cta {{ display: none; }}
     .st-key-navbar [data-testid="stPageLink"] a {{ padding: 6px 9px; }}
@@ -400,7 +403,7 @@ def navbar(home, links, saved_page=None, current=None, cta_label="Get my estimat
                             st.session_state.clear()
                             st.logout()
                 elif account.enabled():
-                    if st.button("Sign in", key="sign_in", icon=":material/account_circle:"):
+                    if st.button("Sign in", key="sign_in"):
                         st.login()
         with cols[-1]:
             with st.container(key="nav_cta"):

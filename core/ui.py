@@ -298,7 +298,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 
 /* Result header and estimate panel */
 .pp-addr h2 {{ font-family: 'Archivo', sans-serif; font-stretch: 108%; font-size: clamp(1.6rem, 3.2vw, 2.3rem); font-weight: 800;
-              letter-spacing: -0.035em; margin: 34px 0 2px; padding: 0; color: {INK}; }}
+              letter-spacing: -0.035em; margin: 84px 0 4px; padding: 0; color: {INK}; }}
 .pp-addr .hood {{ color: {MUTED}; font-size: 1rem; }}
 .pp-tabs {{ display: flex; gap: 26px; border-bottom: 1px solid {LINE}; margin: 18px 0 22px; overflow-x: auto; }}
 .pp-tabs a {{ color: {INK} !important; text-decoration: none !important; font-weight: 600; font-size: 0.95rem; padding: 10px 0;

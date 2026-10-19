@@ -141,8 +141,10 @@ def home_cards(rows, records, prefix):
     for row_start in range(0, len(rows), 4):
         cols = st.columns(4, gap="small")
         for col, (i, m) in zip(cols, rows.iloc[row_start:row_start + 4].iterrows()):
-            sold = (f"Sold {money_short(m['sale_price'])} · {m['sale_date']:%b %Y}"
-                    if m["sale_price"] >= 1000 and pd.notna(m["sale_date"]) else "No recent sale on record")
+            has_sale = m["sale_price"] >= 1000 and pd.notna(m["sale_date"])
+            sold = f"Sold {money(m['sale_price'])}" if has_sale else "No recent sale on record"
+            when = f"{m['sale_date']:%b %Y} · " if has_sale else ""
+            zip_text = f"ZIP {m['zip_code']:.0f}"
             beds = f"{m['number_of_bedrooms']:.0f} bd · " if m["number_of_bedrooms"] >= 1 else ""
             baths = f"{m['number_of_bathrooms']:.0f} ba · " if m["number_of_bathrooms"] >= 1 else ""
             size = f"{m['total_livable_area']:,.0f} sq ft" if m["total_livable_area"] > 0 else "size unknown"
@@ -152,7 +154,7 @@ def home_cards(rows, records, prefix):
                     f'<div class="pp-comp">{photos.picture_html(m["lat"], m["lon"], 150)}<div class="body">'
                     f'<div class="price">{sold}</div>'
                     f'<div class="addr">{nice_address(m["address"])}</div>'
-                    f'<div class="sub">{place or "ZIP"} · {m["zip_code"]:.0f}</div>'
+                    f'<div class="sub">{when}{place or zip_text}</div>'
                     f'<div class="feat">{beds}{baths}{size}</div></div></div>', unsafe_allow_html=True)
                 st.button(f"Estimate {nice_address(m['address'])}", key=f"{prefix}_open_{i}", on_click=pick_home,
                           args=(records[i],))
@@ -557,9 +559,9 @@ if result:
             with col, st.container(key=f"compcard_{i}"):
                 st.markdown(
                     f'<div class="pp-comp">{photos.picture_html(c.lat, c.lon, 140)}'
-                    f'<div class="body"><div class="price">Sold {money(c.sale_price)} · {c.sale_date:%b %Y}</div>'
+                    f'<div class="body"><div class="price">Sold {money(c.sale_price)}</div>'
                     f'<div class="addr">{nice_address(c.address)}</div>'
-                    f'<div class="sub">{c.distance_miles:.2f} mi away</div>'
+                    f'<div class="sub">{c.sale_date:%b %Y} · {c.distance_miles:.2f} mi away</div>'
                     f'<div class="feat">{c.number_of_bedrooms:.0f} bd · {c.number_of_bathrooms:.0f} ba · '
                     f'{c.total_livable_area:,.0f} sq ft · built {c.year_built:.0f}</div>'
                     '</div></div>', unsafe_allow_html=True)
@@ -591,10 +593,4 @@ if not result and lookup not in ("units", "pick", "notfound"):
         photos.has_photos(list(zip(featured["lat"], featured["lon"])))
     home_cards(featured, featured.to_dict("records"), "featured")
 
-ui.section("How it works")
-ui.steps([
-    ("Search the address", "We find the home in the city's records and fill in its details for you."),
-    ("Check the details", "Renovated or something's off? Update bedrooms, size, or condition in one click."),
-    ("Get a price you can explain", "A suggested price, a likely range, the reasons behind it, and nearby sales."),
-])
 ui.footer()

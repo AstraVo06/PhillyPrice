@@ -59,7 +59,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-nav_logo [data-testid="stPageLink"] a {{ padding-left: 0; background: transparent !important; }}
 .st-key-nav_logo [data-testid="stPageLink"] a p {{ font-size: 1.5rem !important; font-weight: 800 !important; color: {NAVY} !important; letter-spacing: -0.03em; }}
 .st-key-nav_logo [data-testid="stIconMaterial"] {{ color: {GOLD}; font-size: 1.9rem; }}
-.st-key-nav_cta [data-testid="stPageLink"] a {{ background: {GOLD} !important; box-shadow: 0 6px 16px rgba(242,178,51,0.35); }}
+.st-key-nav_cta [data-testid="stPageLink"] a {{ background: {GOLD} !important; box-shadow: none !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a p {{ color: {INK} !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a:hover {{ background: {GOLD_DARK} !important; }}
 @media (max-width: 900px) {{
@@ -83,7 +83,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
               line-height: 1.04; letter-spacing: -0.035em; margin: 0 0 16px; max-width: 1000px;
               animation: ppRise 0.9s cubic-bezier(.2,.7,.2,1) both; }}
 .pp-hero p {{ animation: ppRise 0.9s 0.15s cubic-bezier(.2,.7,.2,1) both; }}
-.pp-hero h1 em {{ font-style: normal; color: {GOLD}; }}
+.pp-hero h1 em {{ font-style: normal; color: {GOLD}; display: block; }}
 .pp-hero p {{ color: rgba(255,255,255,0.93); font-size: clamp(1.05rem, 2vw, 1.3rem); max-width: 760px; margin: 0; }}
 .pp-hero.pp-compact {{ min-height: 280px; padding: 70px 24px; }}
 [data-testid="stElementContainer"]:has(.pp-hero.pp-compact) {{ margin-bottom: 30px; }}
@@ -170,9 +170,11 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-comp .price {{ font-weight: 800; color: {INK}; font-size: 1.02rem; margin-bottom: 4px; }}
 .pp-comp .top {{ background: {BLUE}; color: #fff; font-weight: 800; text-align: center; padding: 10px; }}
 .pp-comp .body {{ padding: 14px 16px; }}
-.pp-comp .addr {{ font-weight: 700; color: {INK}; }}
+.pp-comp .price, .pp-comp .sub {{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.pp-comp .addr {{ font-weight: 700; color: {INK}; line-height: 1.35; height: 2.7em; overflow: hidden;
+                 display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }}
 .pp-comp .sub {{ color: {MUTED}; font-size: 0.86rem; margin: 2px 0 8px; }}
-.pp-comp .feat {{ color: {INK}; font-size: 0.9rem; }}
+.pp-comp .feat {{ color: {INK}; font-size: 0.9rem; line-height: 1.5; min-height: 3em; }}
 
 .pp-reasons {{ list-style: none; padding: 0; margin: 0; }}
 .pp-reasons li {{ display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid {LINE}; color: {INK}; }}

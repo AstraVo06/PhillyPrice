@@ -59,7 +59,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-nav_logo [data-testid="stPageLink"] a {{ padding-left: 0; background: transparent !important; }}
 .st-key-nav_logo [data-testid="stPageLink"] a p {{ font-size: 1.5rem !important; font-weight: 800 !important; color: {NAVY} !important; letter-spacing: -0.03em; }}
 .st-key-nav_logo [data-testid="stIconMaterial"] {{ color: {GOLD}; font-size: 1.9rem; width: 1.9rem; height: 1.9rem;
-    line-height: 1.9rem; display: inline-flex; align-items: center; justify-content: center; }}
+    line-height: 1.9rem; display: inline-flex; align-items: center; justify-content: center;
+    transform: translateY(-3.5px); }}  /* house sits on the same baseline as the P */
 .st-key-nav_logo [data-testid="stPageLink"] a span:has(> [data-testid="stIconMaterial"]) {{ width: auto; height: auto;
     overflow: visible; margin-right: -3px; }}
 .st-key-nav_logo [data-testid="stPageLink"] a {{ gap: 2px !important; }}

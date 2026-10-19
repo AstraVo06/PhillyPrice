@@ -41,5 +41,5 @@ if (not st.session_state.get("entered") and not account.signed_in() and current.
     st.stop()
 st.session_state["entered"] = True
 
-ui.navbar(estimate, [find_homes, market_map, price_trends, how_it_works, about], saved)
+ui.navbar(estimate, [find_homes, market_map, price_trends, how_it_works, about], saved, current)
 current.run()

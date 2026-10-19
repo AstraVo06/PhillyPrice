@@ -362,9 +362,14 @@ def setup():
     st.markdown(CSS, unsafe_allow_html=True)
 
 
-def navbar(home, links, saved_page=None, cta_label="Get my estimate"):
-    """Branded top bar. `home`, `links` and `saved_page` are st.Page objects."""
+def navbar(home, links, saved_page=None, current=None, cta_label="Get my estimate"):
+    """Branded top bar. `home`, `links`, `saved_page` and `current` are st.Page objects."""
     from core import account
+
+    if current is not None and current.title == home.title:
+        # On the estimate page itself: darker gold with a navy ring, like the grey pill on other pages.
+        st.markdown(f"""<style>.st-key-nav_cta [data-testid="stPageLink"] a {{ background: {GOLD_DARK} !important;
+            box-shadow: inset 0 0 0 2px {BLUE} !important; }}</style>""", unsafe_allow_html=True)
 
     with st.container(key="navbar"):
         cols = st.columns(len(links) + 4, vertical_alignment="center")

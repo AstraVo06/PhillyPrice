@@ -61,7 +61,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-nav_logo [data-testid="stIconMaterial"] {{ color: {GOLD}; font-size: 1.9rem; width: 1.9rem; height: 1.9rem;
     line-height: 1.9rem; display: inline-flex; align-items: center; justify-content: center; }}
 .st-key-nav_logo [data-testid="stPageLink"] a span:has(> [data-testid="stIconMaterial"]) {{ width: auto; height: auto;
-    overflow: visible; margin-right: 2px; }}
+    overflow: visible; margin-right: -3px; }}
+.st-key-nav_logo [data-testid="stPageLink"] a {{ gap: 2px !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a {{ background: {GOLD} !important; box-shadow: none !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a p {{ color: {INK} !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a:hover {{ background: {GOLD_DARK} !important; }}
@@ -334,7 +335,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 [class*="st-key-compcard_"] .stButton button {{ opacity: 0; cursor: pointer; }}
 [class*="st-key-compcard_"]:hover .pp-comp {{ transform: translateY(-5px); box-shadow: 0 16px 34px rgba(14,31,61,0.16); border-color: {GOLD}; }}
 [class*="st-key-compcard_"]:hover .pp-pic img {{ transform: scale(1.06); }}
-.pp-comp {{ height: 100%; }}
+.pp-comp {{ margin-bottom: 20px; }}
 .pp-comp .top.light {{ background: {GOLD_TINT}; color: {BLUE}; font-weight: 700; font-size: 0.9rem; }}
 .pp-comp .go {{ margin-top: 10px; color: {BLUE}; font-weight: 700; font-size: 0.9rem; }}
 

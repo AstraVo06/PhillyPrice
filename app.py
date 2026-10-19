@@ -2,7 +2,7 @@
 
 import streamlit as st
 
-from core import ui
+from core import account, ui
 
 st.set_page_config(page_title=f"{ui.APP_NAME} · Philadelphia home price estimator",
                    page_icon="🏠", layout="wide", initial_sidebar_state="collapsed")
@@ -14,11 +14,21 @@ market_map = st.Page("app_pages/market_map.py", title="Market map")
 price_trends = st.Page("app_pages/price_trends.py", title="Price trends")
 how_it_works = st.Page("app_pages/how_it_works.py", title="How it works")
 about = st.Page("app_pages/about.py", title="About")
+saved = st.Page("app_pages/saved.py", title="Saved homes", url_path="saved")
 
-current = st.navigation([estimate, find_homes, market_map, price_trends, how_it_works, about], position="hidden")
+current = st.navigation([estimate, find_homes, market_map, price_trends, how_it_works, about, saved], position="hidden")
+
+# Back from Google sign-in with a home the visitor wanted to save: open it and save it.
+pending = account.take_pending()
+if pending:
+    st.session_state["entered"] = True
+    st.session_state["search_request"] = pending
+    st.session_state["save_after_search"] = True
+    if current.title != "Estimate":
+        st.switch_page(estimate)
 
 # Intro screen the first time a visitor lands on the home page.
-if not st.session_state.get("entered") and current.title == "Estimate":
+if not st.session_state.get("entered") and not account.signed_in() and current.title == "Estimate":
     from core import insights as ins
     sales = ins.load_sales()
     if ui.splash(len(ins.load_homes()), len(sales), sales["sale_date"].max()):
@@ -27,5 +37,5 @@ if not st.session_state.get("entered") and current.title == "Estimate":
     st.stop()
 st.session_state["entered"] = True
 
-ui.navbar(estimate, [find_homes, market_map, price_trends, how_it_works, about])
+ui.navbar(estimate, [find_homes, market_map, price_trends, how_it_works, about], saved)
 current.run()

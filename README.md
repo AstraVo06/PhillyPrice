@@ -47,10 +47,13 @@ random forest refit on all 107,321 sales.
 | Path | What it is |
 |---|---|
 | `app.py` | Website entry point (page navigation) |
-| `app_pages/` | The six pages: Estimate, Find homes, Market map, Price trends, How it works, About |
+| `app_pages/` | The pages: Estimate, Find homes, Market map, Price trends, How it works, About, Saved homes |
 | `core/model_backend.py` | The group's backend from the notebook (address lookup, mortgage rate, prediction) |
 | `core/insights.py` | Price range, per-house explanation, comparable sales, neighborhood facts |
 | `core/ui.py` | Colors, styles, top bar, and shared page sections |
+| `core/account.py` | Sign in with Google and saved homes (Supabase) |
+| `supabase/saved_homes.sql` | Creates the saved homes table in Supabase |
+| `data/featured_homes.csv` | Sample homes with street photos shown on the Estimate page |
 | `model/` | Files exported by the notebook: trained model, tract lookup, mortgage rate lookup |
 | `data/` | Address lookup (`homes.csv.gz`), comparable sales, and market map data, built by `scripts/build_app_data.py` |
 | `notebook/BUS_310_Group_Project_Final.ipynb` | The model notebook (Google Colab) |
@@ -105,6 +108,31 @@ as a secret named `GOOGLE_MAPS_API_KEY`:
 
 - on your computer: in `.streamlit/secrets.toml` (never commit this file)
 - on Streamlit Community Cloud: app **Settings → Secrets**
+
+## Accounts and saved homes (optional)
+
+Visitors can sign in with Google and save homes. This uses Streamlit's built-in `st.login` (the site never
+sees or stores passwords) and a free Supabase database for the saved homes. Without these secrets the site
+works the same, just without sign-in.
+
+1. **Google sign-in.** In Google Cloud Console, create an OAuth client (type *Web application*) with these
+   authorized redirect URIs: `https://phillyprice.streamlit.app/oauth2callback` and
+   `http://localhost:8502/oauth2callback`. Publish the consent screen so anyone can sign in.
+2. **Supabase.** Create a free project, open **SQL Editor**, and run `supabase/saved_homes.sql`. Row level
+   security is on with no policies, so only the website's server (with the secret key) can reach the table.
+3. **Secrets** (Streamlit Cloud: **Settings → Secrets**; locally: `.streamlit/secrets.toml`, never committed):
+
+```toml
+SUPABASE_URL = "https://<project>.supabase.co"
+SUPABASE_KEY = "<Supabase secret key>"
+
+[auth]
+redirect_uri = "https://phillyprice.streamlit.app/oauth2callback"   # locally: http://localhost:8502/oauth2callback
+cookie_secret = "<long random string>"
+client_id = "<Google OAuth client ID>"
+client_secret = "<Google OAuth client secret>"
+server_metadata_url = "https://accounts.google.com/.well-known/openid-configuration"
+```
 
 ## Settings the group can change
 

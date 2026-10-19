@@ -68,6 +68,10 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
     .st-key-nav_logo [data-testid="stPageLink"] a p {{ font-size: 1.3rem !important; }}
 }}
 
+.st-key-nav_account button {{ border-radius: 999px; border: 1px solid {LINE}; font-weight: 600; white-space: nowrap; }}
+.st-key-nav_account button p {{ font-weight: 600; color: {INK}; }}
+.st-key-signin_card {{ border-left: 4px solid {GOLD}; padding: 6px 0 6px 16px; margin: 12px 0; }}
+
 /* Hero */
 .pp-hero {{
     width: 100vw; margin-left: calc(50% - 50vw); position: relative; min-height: 520px;
@@ -344,16 +348,30 @@ def setup():
     st.markdown(CSS, unsafe_allow_html=True)
 
 
-def navbar(home, links, cta_label="Get my estimate"):
-    """Branded top bar. `home` and `links` are st.Page objects."""
+def navbar(home, links, saved_page=None, cta_label="Get my estimate"):
+    """Branded top bar. `home`, `links` and `saved_page` are st.Page objects."""
+    from core import account
+
     with st.container(key="navbar"):
-        cols = st.columns(len(links) + 3, vertical_alignment="center")
+        cols = st.columns(len(links) + 4, vertical_alignment="center")
         with cols[0]:
             with st.container(key="nav_logo"):
                 st.page_link(home, label=APP_NAME, icon=":material/home:")
-        for col, page in zip(cols[2:-1], links):
+        for col, page in zip(cols[2:-2], links):
             with col:
                 st.page_link(page)
+        with cols[-2]:
+            with st.container(key="nav_account"):
+                if account.signed_in():
+                    with st.popover(account.first_name(), icon=":material/account_circle:"):
+                        st.caption(f"Signed in as {account.email()}")
+                        st.page_link(saved_page, label="Saved homes", icon=":material/favorite:")
+                        if st.button("Sign out", icon=":material/logout:", key="sign_out"):
+                            st.session_state.clear()
+                            st.logout()
+                elif account.enabled():
+                    if st.button("Sign in", key="sign_in", icon=":material/account_circle:"):
+                        st.login()
         with cols[-1]:
             with st.container(key="nav_cta"):
                 st.page_link(home, label=cta_label)

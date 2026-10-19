@@ -7,6 +7,7 @@ import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
+from core import account
 from core import insights as ins
 from core import photos
 from core import ui
@@ -94,7 +95,7 @@ def note(message, kind="info"):
 
 def run_search(query):
     query = query.strip()
-    for key in ["result", "home", "matches", "typed_address", "streets", "pick_filter"]:
+    for key in ["result", "home", "matches", "typed_address", "streets", "pick_filter", "ask_signin"]:
         st.session_state.pop(key, None)
     if not query:
         st.session_state["lookup"] = None
@@ -155,6 +156,56 @@ def home_cards(rows, records, prefix):
                     f'<div class="feat">{beds}{baths}{size}</div></div></div>', unsafe_allow_html=True)
                 st.button(f"Estimate {nice_address(m['address'])}", key=f"{prefix}_open_{i}", on_click=pick_home,
                           args=(records[i],))
+
+
+def saved_record(result, home, title, d):
+    location = result["location"]
+    key = home["parcel_number"] if home else "addr:" + title.lower()
+    return {"home_key": key, "address": title, "lat": location["latitude"], "lon": location["longitude"],
+            "estimate": round(result["price"]), "low": round(result["low"]), "high": round(result["high"]),
+            "beds": d["beds"], "baths": d["baths"], "sqft": d["sqft"]}
+
+
+def save_button(result, home, title, d):
+    """Heart button: saves the home for signed-in visitors, or asks them to sign in first."""
+    record = saved_record(result, home, title, d)
+    try:
+        if st.session_state.pop("save_after_search", False) and account.signed_in():
+            account.save_home(record)
+            st.toast("Saved to your homes", icon=":material/favorite:")
+        already = account.signed_in() and account.is_saved(record["home_key"])
+    except requests.RequestException:
+        st.toast("Saved homes are unavailable right now. Try again in a minute.", icon=":material/cloud_off:")
+        return
+    if already:
+        if st.button("Saved to your homes", icon=":material/favorite:", use_container_width=True, key="unsave_home",
+                     help="Click to remove it from your saved homes"):
+            account.remove_home(record["home_key"])
+            st.rerun()
+    elif st.button("Save this home", icon=":material/favorite_border:", use_container_width=True, key="save_home"):
+        if account.signed_in():
+            account.save_home(record)
+            st.toast("Saved to your homes", icon=":material/favorite:")
+            st.rerun()
+        else:
+            st.session_state["ask_signin"] = True
+            st.rerun()
+
+
+def signin_prompt(home, title):
+    if not st.session_state.get("ask_signin") or account.signed_in():
+        return
+    with st.container(key="signin_card"):
+        st.markdown("**Sign in to save this home.** Your saved homes stay in your account, so you can come back "
+                    "to them on any device. We only use your Google name and email.")
+        if home:
+            account.remember_pending(title)
+        c1, c2 = st.columns([1, 3], vertical_alignment="center")
+        if c1.button("Continue with Google", type="primary", key="google_signin"):
+            st.login()
+        if c2.button("Not now", type="tertiary", key="signin_later"):
+            st.session_state.pop("ask_signin", None)
+            st.rerun()
 
 
 def pick_home(home):
@@ -396,8 +447,13 @@ if result:
     def at(value):
         return f"{100 * (value - axis_low) / (axis_high - axis_low):.1f}%"
 
-    tick = (f'<span class="tick" style="left:{at(nearby)}"></span>'
-            f'<span class="tick-lbl" style="left:{at(nearby)}">Nearby sales {money_short(nearby)}</span>') if nearby else ""
+    tick = ""
+    if nearby:
+        spot = float(at(nearby)[:-1])
+        shift = "0" if spot < 18 else ("-100%" if spot > 82 else "-50%")
+        tick = (f'<span class="tick" style="left:{at(nearby)}"></span>'
+                f'<span class="tick-lbl" style="left:{at(nearby)};transform:translateX({shift})">'
+                f'Nearby sales {money_short(nearby)}</span>')
     facts = [(d["beds"], "beds"), (d["baths"], "baths"), (f"{d['sqft']:,}", "sq ft"), (d["year"], "built")]
     meta = [f"Condition: {CONDITION_CHOICES[d['condition']].lower()}"]
     if sold:
@@ -418,12 +474,15 @@ if result:
   <div class="facts">{"".join(f"<div><b>{v}</b><span>{k}</span></div>" for v, k in facts)}</div>
   <div class="meta">{" · ".join(meta)}<br><span>{"From the city's property records" if home else "From the details you entered"}</span></div>
 </div>""", unsafe_allow_html=True)
+        if account.enabled():
+            save_button(result, home, title, d)
         b1, b2 = st.columns(2)
         b1.link_button("Street View", ins.street_view_url(location["latitude"], location["longitude"]),
                        icon=":material/streetview:", use_container_width=True)
         if home:
             b2.link_button("City record", ins.city_record_url(home["parcel_number"]),
                            icon=":material/description:", use_container_width=True)
+    signin_prompt(home, title)
 
     if len(comps):
         line = (f"<b>Similar homes nearby sold for about {money_short(nearby)}.</b> That's the middle of {len(comps)} "

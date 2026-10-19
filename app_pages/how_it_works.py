@@ -2,7 +2,7 @@ import streamlit as st
 
 from core import insights as ins
 from core import ui
-from core.ui import money
+from core.ui import money, money_short
 
 ui.hero("How it works", "Simple answers about where the price comes from and how much to trust it.", compact=True)
 
@@ -28,13 +28,28 @@ with st.expander("How accurate is the estimate?", expanded=True):
     ui.stat_cards([
         (money(ins.TYPICAL_ERROR), "Average miss per home on 2025–26 sales"),
         ("0.41", "Share of price differences explained (R²), 2025–26 sales"),
-        ("107,321", "Sales the live model learned from"),
+        ("8 in 10", "2025–26 sales that landed inside their likely range"),
     ])
     st.markdown("A few very expensive or unusual sales make the average miss larger, so many homes land closer "
                 "than that. Always compare the estimate with the nearby sales shown next to it.")
 
 with st.expander("What does the realistic price range mean?"):
-    if ins.RANGE_METHOD == "typical_error":
+    if ins.RANGE_METHOD == "price_band":
+        st.markdown("It's where **8 in 10 similar homes actually sold**. We priced the 2025–26 sales with a copy "
+                    "of the model that only learned from 2019–2024, then measured how far the real sale prices "
+                    "landed from the estimate. Cheaper homes have wider ranges because their sale prices vary "
+                    "more: some sell well below value to family members or as-is.")
+        rows = []
+        previous = 0
+        for top, low_x, high_x in ins.RANGE_BANDS:
+            level = f"Over {money_short(previous)}" if top == float("inf") else (
+                f"Under {money_short(top)}" if previous == 0 else f"{money_short(previous)} – {money_short(top)}")
+            rows.append(f"| {level} | {(low_x - 1) * 100:+.0f}% | {(high_x - 1) * 100:+.0f}% |")
+            previous = top
+        table = "| Estimate | Low end | High end |\n|---|---|---|\n" + "\n".join(rows)
+        st.markdown(table.replace("$", "\\$"))
+        st.caption("For example, a \\$300K estimate has a likely range of about \\$154K to \\$381K.")
+    elif ins.RANGE_METHOD == "typical_error":
         st.markdown(f"It's the suggested price plus or minus **{money(ins.TYPICAL_ERROR)}**, the model's average "
                     "miss on recent sales. A home rarely sells for exactly one number, so the range is a better "
                     "way to talk about price with a buyer or seller.")

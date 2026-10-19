@@ -138,8 +138,11 @@ server_metadata_url = "https://accounts.google.com/.well-known/openid-configurat
 
 In `core/insights.py`:
 
-- `RANGE_METHOD`: `"typical_error"` (estimate ± the model's 2025–26 average error) or `"tree_spread"`
-  (10th to 90th percentile of the 100 trees)
+- `RANGE_METHOD`: `"price_band"` (default: the range where 8 in 10 similar homes sold), `"typical_error"`
+  (estimate ± the model's 2025–26 average error), or `"tree_spread"` (10th to 90th percentile of the 100 trees)
+- `RANGE_BANDS`: the 8 in 10 multipliers for each price level. They come from `scripts/check_price_range.py`,
+  which retrains the tuned model on 2019–2024 sales and measures how far the 2025–26 sale prices landed from
+  the estimate (10th and 90th percentile of sale price ÷ estimate). Rerun it if the model is retrained.
 - `TYPICAL_ERROR`: update it if the model is retrained
 - `CONDITION_LABELS`: the interior condition names shown in the form
 

@@ -25,9 +25,21 @@ DATA_DIR = os.path.join(REPO, "data")
 TYPICAL_ERROR = 104_456
 
 # How the likely price range is built:
+#   "price_band"    -> 8 in 10 range for the home's price level (RANGE_BANDS below)
 #   "typical_error" -> estimate +/- TYPICAL_ERROR
 #   "tree_spread"   -> 10th to 90th percentile of the 100 trees' predictions
-RANGE_METHOD = "typical_error"
+RANGE_METHOD = "price_band"
+
+# For each level of estimated price: (top of the level, low multiplier, high multiplier).
+# 8 in 10 of the 2025-2026 sales, priced by a copy of the tuned model trained on 2019-2024 only,
+# sold between estimate x low and estimate x high. Recompute with scripts/check_price_range.py.
+RANGE_BANDS = [
+    (150_000, 0.309, 1.450),
+    (250_000, 0.422, 1.313),
+    (400_000, 0.514, 1.271),
+    (700_000, 0.633, 1.300),
+    (float("inf"), 0.725, 1.435),
+]
 
 # Lowest sale price kept in the training data.
 MIN_PRICE = 10_000
@@ -368,6 +380,9 @@ def price_range(row, price):
         Xt = _transform(row).astype(np.float32)
         trees = np.array([tree.predict(Xt)[0] for tree in mb.model.named_steps["model"].estimators_])
         low, high = np.percentile(trees, [10, 90])
+    elif RANGE_METHOD == "price_band":
+        _, low_x, high_x = next(band for band in RANGE_BANDS if price < band[0])
+        low, high = price * low_x, price * high_x
     else:
         low, high = price - TYPICAL_ERROR, price + TYPICAL_ERROR
     return float(max(low, MIN_PRICE)), float(high)

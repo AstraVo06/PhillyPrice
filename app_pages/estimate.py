@@ -461,6 +461,8 @@ if result:
     if sold:
         meta.append(f"Last sold {money(sold['sale_price'])} in {sold['sale_date']:%b %Y}")
 
+    range_note = ("8 in 10 similar homes sold within this range in 2025–26."
+                  if ins.RANGE_METHOD == "price_band" else "")
     photo_col, est_col = st.columns([1.25, 1], gap="large")
     with photo_col:
         st.markdown(f'<div class="pp-hero-pic">{photos.picture_html(location["latitude"], location["longitude"], 360)}</div>',
@@ -473,6 +475,7 @@ if result:
   <div class="bar"><span class="fill" style="left:{at(low)};width:calc({at(high)} - {at(low)})"></span>
     <span class="pin" style="left:{at(price)}"></span>{tick}</div>
   <div class="ends"><span>{money_short(low)}</span><span>Likely range</span><span>{money_short(high)}</span></div>
+  <div class="range-note">{range_note}</div>
   <div class="facts">{"".join(f"<div><b>{v}</b><span>{k}</span></div>" for v, k in facts)}</div>
   <div class="meta">{" · ".join(meta)}<br><span>{"From the city's property records" if home else "From the details you entered"}</span></div>
 </div>""", unsafe_allow_html=True)

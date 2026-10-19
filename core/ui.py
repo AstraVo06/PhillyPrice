@@ -303,6 +303,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
                     font-weight: 600; white-space: nowrap; }}
 .pp-est .ends {{ display: flex; justify-content: space-between; font-size: 0.85rem; color: {MUTED}; margin-top: 8px; }}
 .pp-est .ends span:first-child, .pp-est .ends span:last-child {{ color: {INK}; font-weight: 700; }}
+.pp-est .range-note {{ color: {MUTED}; font-size: 0.8rem; margin-top: 4px; }}
 .pp-est .facts {{ display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid {LINE}; border-bottom: 1px solid {LINE};
                  margin: 22px 0 12px; }}
 .pp-est .facts div {{ padding: 12px 0; }}

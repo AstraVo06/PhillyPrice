@@ -21,10 +21,10 @@ LINE = "#E8E5E0"
 PAPER = "#F7F5F2"
 GREEN = "#2E8B57"
 
-HERO_PHOTO = ("https://images.unsplash.com/photo-1779898614792-dd858c58395a"
-              "?auto=format&fit=crop&w=2400&q=80")
-PHOTO_CREDIT = ('Cover photo by <a href="https://unsplash.com/@bryanangelo?utm_source=philly_price&utm_medium=referral" '
-                'target="_blank">@bryanangelo</a> on <a href="https://unsplash.com/?utm_source=philly_price&utm_medium=referral" '
+# Philadelphia skyline over the Schuylkill River, served from static/ (Unsplash License).
+HERO_PHOTO = "app/static/philly-skyline.jpg"
+PHOTO_CREDIT = ('Cover photo by <a href="https://unsplash.com/photos/M_P5NZ-jKuw?utm_source=philly_price&utm_medium=referral" '
+                'target="_blank">Alejandro Barba</a> on <a href="https://unsplash.com/?utm_source=philly_price&utm_medium=referral" '
                 'target="_blank">Unsplash</a>')
 
 CSS = f"""
@@ -78,7 +78,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 /* Hero */
 .pp-hero {{
     width: 100vw; margin-left: calc(50% - 50vw); position: relative; min-height: 520px;
-    background: linear-gradient(rgba(14,31,61,0.45), rgba(14,31,61,0.62)), url('{HERO_PHOTO}') center 38%/cover;
+    background: linear-gradient(rgba(14,31,61,0.45), rgba(14,31,61,0.62)), url('{HERO_PHOTO}') center 45%/cover;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     text-align: center; padding: 90px 24px 160px;
 }}
@@ -267,9 +267,10 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 /* Intro screen */
 .st-key-splash {{
     position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; align-items: flex-start;
-    justify-content: center; gap: 0 !important; text-align: left; padding: 0 max(28px, 8vw);
-    background: linear-gradient(90deg, rgba(10,24,48,0.92) 0%, rgba(10,24,48,0.70) 45%, rgba(10,24,48,0.25) 100%),
-                url('{HERO_PHOTO}') center/cover;
+    justify-content: flex-end; gap: 0 !important; text-align: left; padding: 0 max(28px, 8vw) max(96px, 13vh);
+    background: linear-gradient(180deg, rgba(10,24,48,0.10) 0%, rgba(10,24,48,0.25) 38%, rgba(10,24,48,0.88) 74%),
+                linear-gradient(90deg, rgba(10,24,48,0.55) 0%, rgba(10,24,48,0) 65%),
+                url('{HERO_PHOTO}') center 40%/cover;
     animation: ppFade 0.8s both;
 }}
 .st-key-splash [data-testid="stElementContainer"] {{ width: auto !important; display: flex; justify-content: flex-start; }}
@@ -409,7 +410,7 @@ def splash(home_count, sale_count, last_sale):
         st.markdown('<div class="pp-splash-mark"><span class="bar"></span>Philadelphia, PA</div>'
                     '<div class="pp-splash-title">Philly<span>Price</span></div>'
                     '<div class="pp-splash-sub">Know what any Philadelphia home is worth, from the city\'s own '
-                    'sales records. Free, and no sign-up.</div>', unsafe_allow_html=True)
+                    'sales records. Free to use, no account needed.</div>', unsafe_allow_html=True)
         started = st.button("Get started  →", key="start_button")
         st.markdown(f'<div class="pp-splash-foot">{home_count:,} homes · {sale_count:,} recorded sales · Sales through {last_sale:%B %Y}</div>',
                     unsafe_allow_html=True)

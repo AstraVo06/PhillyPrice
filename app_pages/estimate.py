@@ -364,7 +364,7 @@ with st.container(key="search_card"):
                                      placeholder="Enter a Philadelphia address, like 2618 Jasper St")
         searched = col_button.form_submit_button("Search", type="primary", icon=":material/search:", width="stretch")
 with st.container(key="hero_extras"):
-    st.markdown(f'<div class="pp-trust">Free · No sign-up · <b>{len(ins.load_homes()):,}</b> Philadelphia homes '
+    st.markdown(f'<div class="pp-trust">Free · No account needed · <b>{len(ins.load_homes()):,}</b> Philadelphia homes '
                 "in our search</div>", unsafe_allow_html=True)
     st.button("Just looking? Try an example home", type="tertiary", on_click=fill_example)
 

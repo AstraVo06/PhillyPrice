@@ -362,7 +362,7 @@ with st.container(key="search_card"):
         col_input, col_button = st.columns([4, 1.35], vertical_alignment="center")
         query = col_input.text_input("Search an address", key="query", label_visibility="collapsed",
                                      placeholder="Enter a Philadelphia address, like 2618 Jasper St")
-        searched = col_button.form_submit_button("Search", type="primary", icon=":material/search:")
+        searched = col_button.form_submit_button("Search", type="primary", icon=":material/search:", width="stretch")
 with st.container(key="hero_extras"):
     st.markdown(f'<div class="pp-trust">Free · No sign-up · <b>{len(ins.load_homes()):,}</b> Philadelphia homes '
                 "in our search</div>", unsafe_allow_html=True)

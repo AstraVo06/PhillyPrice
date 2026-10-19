@@ -58,7 +58,10 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-navbar [data-testid="stPageLink"] a p {{ font-weight: 600; color: {INK}; font-size: 0.98rem; white-space: nowrap; }}
 .st-key-nav_logo [data-testid="stPageLink"] a {{ padding-left: 0; background: transparent !important; }}
 .st-key-nav_logo [data-testid="stPageLink"] a p {{ font-size: 1.5rem !important; font-weight: 800 !important; color: {NAVY} !important; letter-spacing: -0.03em; }}
-.st-key-nav_logo [data-testid="stIconMaterial"] {{ color: {GOLD}; font-size: 1.9rem; }}
+.st-key-nav_logo [data-testid="stIconMaterial"] {{ color: {GOLD}; font-size: 1.9rem; width: 1.9rem; height: 1.9rem;
+    line-height: 1.9rem; display: inline-flex; align-items: center; justify-content: center; }}
+.st-key-nav_logo [data-testid="stPageLink"] a span:has(> [data-testid="stIconMaterial"]) {{ width: auto; height: auto;
+    overflow: visible; margin-right: 2px; }}
 .st-key-nav_cta [data-testid="stPageLink"] a {{ background: {GOLD} !important; box-shadow: none !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a p {{ color: {INK} !important; }}
 .st-key-nav_cta [data-testid="stPageLink"] a:hover {{ background: {GOLD_DARK} !important; }}
@@ -107,6 +110,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-search_card [data-testid="stFormSubmitButton"] button {{ padding: 0 1.6rem; min-height: 60px; font-size: 1.15rem;
     white-space: nowrap; width: 100%; }}
 .st-key-search_card [data-testid="stFormSubmitButton"] button p {{ font-size: 1.15rem; }}
+.st-key-search_card [data-testid="stFormSubmitButton"], .st-key-search_card [data-testid="stFormSubmitButton"] > div {{ width: 100%; }}
 .st-key-search_card [data-testid="stFormSubmitButton"] button [data-testid="stIconMaterial"] {{ font-size: 1.4rem; }}
 .st-key-browse_more {{ margin-top: 16px; }}
 .st-key-search_card [data-testid="stFormSubmitButton"] button p {{ white-space: nowrap; }}

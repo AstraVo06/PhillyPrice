@@ -451,16 +451,25 @@ if result:
                 '<nav class="pp-tabs">' + "".join(f'<a href="#pp-{k}">{v}</a>' for k, v in tabs) + "</nav>",
                 unsafe_allow_html=True)
     if st.session_state.pop("scroll_to_price", False):
-        # A new number each time, so the browser runs the script again on every click. It retries for about two
-        # seconds because a slow connection can still be drawing the page.
+        # A new number each time, so the browser runs the script again on every click. It retries briefly in case
+        # the page is still being drawn, but stops once the address is in place or the visitor scrolls themselves.
         st.session_state["scroll_nonce"] = st.session_state.get("scroll_nonce", 0) + 1
         st.html(f"""<script>/* scroll {st.session_state["scroll_nonce"]} */ (() => {{
+  let stopped = false;
+  const stop = () => {{ stopped = true; }};
+  for (const kind of ["wheel", "touchstart", "keydown", "mousedown"])
+    window.addEventListener(kind, stop, {{once: true, passive: true, capture: true}});
+  let settled = 0;
   const run = (triesLeft) => {{
+    if (stopped) return;
     const el = document.getElementById("pp-price");
-    if (el && Math.abs(el.getBoundingClientRect().top) > 80) el.scrollIntoView({{block: "start"}});
-    if (triesLeft > 0) setTimeout(() => run(triesLeft - 1), 400);
+    // The address stops a menu bar's height below the top (scroll-margin-top), so compare with that spot.
+    const target = el ? parseFloat(getComputedStyle(el).scrollMarginTop) || 0 : 0;
+    if (el && Math.abs(el.getBoundingClientRect().top - target) > 40) {{ el.scrollIntoView({{block: "start", behavior: "instant"}}); settled = 0; }}
+    else if (el && ++settled >= 2) return;
+    if (triesLeft > 0) setTimeout(() => run(triesLeft - 1), 300);
   }};
-  setTimeout(() => run(5), 200);
+  setTimeout(() => run(8), 150);
 }})();</script>""", unsafe_allow_javascript=True)
 
     d = st.session_state.get("used_details", details_now())

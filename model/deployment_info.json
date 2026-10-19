@@ -1,0 +1,36 @@
+{
+    "model_features": [
+        "total_livable_area",
+        "number_of_bedrooms",
+        "number_of_bathrooms",
+        "interior_condition",
+        "house_age",
+        "zip_code",
+        "median_household_income",
+        "median_gross_rent",
+        "owner_occupied_pct",
+        "mortgage_rate",
+        "distance_city_hall_miles",
+        "sale_year",
+        "sale_month"
+    ],
+    "user_inputs": [
+        "total_livable_area",
+        "number_of_bedrooms",
+        "number_of_bathrooms",
+        "interior_condition",
+        "year_built",
+        "property_location"
+    ],
+    "automatically_generated": [
+        "house_age",
+        "zip_code",
+        "median_household_income",
+        "median_gross_rent",
+        "owner_occupied_pct",
+        "mortgage_rate",
+        "distance_city_hall_miles",
+        "sale_year",
+        "sale_month"
+    ]
+}

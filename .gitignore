@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+.claude/
+# Raw input data is too large for GitHub; download it from the links in the README.
+*.csv
+!model/*.csv
+!data/*.csv
+
+# Secrets (API keys)
+.streamlit/secrets.toml

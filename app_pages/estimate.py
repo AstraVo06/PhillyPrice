@@ -178,11 +178,11 @@ def save_button(result, home, title, d):
         st.toast("Saved homes are unavailable right now. Try again in a minute.", icon=":material/cloud_off:")
         return
     if already:
-        if st.button("Saved to your homes", icon=":material/favorite:", use_container_width=True, key="unsave_home",
+        if st.button("Saved to your homes", icon=":material/favorite:", width="stretch", key="unsave_home",
                      help="Click to remove it from your saved homes"):
             account.remove_home(record["home_key"])
             st.rerun()
-    elif st.button("Save this home", icon=":material/favorite_border:", use_container_width=True, key="save_home"):
+    elif st.button("Save this home", icon=":material/favorite_border:", width="stretch", key="save_home"):
         if account.signed_in():
             account.save_home(record)
             st.toast("Saved to your homes", icon=":material/favorite:")
@@ -395,7 +395,7 @@ if lookup in ("units", "pick"):
             photos.has_photos(list(zip(shown["lat"], shown["lon"])))  # fetch in parallel, cached for the cards
         home_cards(shown, st.session_state["matches"], "pick")
         left = len(matches) - len(shown)
-        if left > 0 and st.button(f"Show more homes ({left:,} left)", use_container_width=True):
+        if left > 0 and st.button(f"Show more homes ({left:,} left)", width="stretch"):
             st.session_state["pick_shown"] += PICK_PAGE
             st.rerun()
 
@@ -478,10 +478,10 @@ if result:
             save_button(result, home, title, d)
         b1, b2 = st.columns(2)
         b1.link_button("Street View", ins.street_view_url(location["latitude"], location["longitude"]),
-                       icon=":material/streetview:", use_container_width=True)
+                       icon=":material/streetview:", width="stretch")
         if home:
             b2.link_button("City record", ins.city_record_url(home["parcel_number"]),
-                           icon=":material/description:", use_container_width=True)
+                           icon=":material/description:", width="stretch")
     signin_prompt(home, title)
 
     if len(comps):
@@ -529,7 +529,7 @@ if result:
                                xaxis=dict(visible=False, range=[low - (pad if low < 0 else 0), high + pad]),
                                yaxis=dict(tickfont=dict(size=12)),
                                plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(bars, use_container_width=True, config={"displayModeBar": False, "scrollZoom": False})
+            st.plotly_chart(bars, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
     with right:
         ui.section("On the map", "The home in gold, similar sales in blue.", anchor="map")
         fig = go.Figure()
@@ -546,7 +546,7 @@ if result:
         fig.update_layout(map=dict(style="carto-positron", zoom=14.4,
                                    center=dict(lat=location["latitude"], lon=location["longitude"])),
                           margin=dict(l=0, r=0, t=0, b=0), height=380, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "scrollZoom": False})
+        st.plotly_chart(fig, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
 
     if len(comps):
         ui.section("Homes like this that sold nearby",

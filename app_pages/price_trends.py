@@ -26,7 +26,7 @@ if metric == MORTGAGE:
                       height=520, margin=dict(l=10, r=30, t=70, b=10), yaxis=dict(ticksuffix="%", gridcolor=ui.LINE),
                       plot_bgcolor="#fff", paper_bgcolor="#fff")
     with st.container(border=True):
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "scrollZoom": False})
+        st.plotly_chart(fig, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
         st.caption("Source: Freddie Mac weekly survey via FRED, averaged by month. Higher rates make monthly "
                    "payments bigger, which usually cools prices.")
 else:
@@ -56,7 +56,7 @@ else:
                           legend=dict(orientation="h", y=1.08, x=0.5, xanchor="center"),
                           plot_bgcolor="#fff", paper_bgcolor="#fff")
         with st.container(border=True):
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "scrollZoom": False})
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
             st.caption("Single-family homes only. 2026 includes sales through September. Sales where several "
                        "homes changed hands for one total price are left out.")
 

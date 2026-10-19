@@ -72,7 +72,7 @@ Input data (not stored in this repository because of file size):
 
 ## Run the website on your computer
 
-Needs Python 3.9 to 3.12.
+Needs Python 3.11 or 3.12 (Streamlit 1.65 needs 3.10+; 3.12 matches Streamlit Cloud).
 
 ```bash
 python3 -m venv .venv

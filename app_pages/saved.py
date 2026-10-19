@@ -48,10 +48,10 @@ else:
                         f'<div class="feat">{home["beds"]} bd · {home["baths"]} ba · {home["sqft"]:,} sq ft</div>'
                         '</div></div>', unsafe_allow_html=True)
                     c1, c2 = st.columns(2)
-                    if c1.button("Today's estimate", key=f"open_{home['home_key']}", use_container_width=True,
+                    if c1.button("Today's estimate", key=f"open_{home['home_key']}", width="stretch",
                                  on_click=open_home, args=(home["address"],), type="primary"):
                         st.switch_page("app_pages/estimate.py")
-                    if c2.button("Remove", key=f"remove_{home['home_key']}", use_container_width=True,
+                    if c2.button("Remove", key=f"remove_{home['home_key']}", width="stretch",
                                  icon=":material/delete:"):
                         account.remove_home(home["home_key"])
                         st.rerun()

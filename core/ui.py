@@ -100,7 +100,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 [data-testid="stLayoutWrapper"]:has(> .st-key-search_card) {{ margin-top: -154px; position: relative; z-index: 5; }}
 .st-key-search_card [data-testid="stForm"] {{ border: none; padding: 0; }}
 .st-key-search_card [data-testid="stTextInput"] div[data-baseweb="input"],
-.st-key-search_card [data-testid="stTextInput"] div[data-baseweb="base-input"] {{ border: none !important; background: transparent !important; }}
+.st-key-search_card [data-testid="stTextInput"] div[data-baseweb="base-input"],
+.st-key-search_card [data-testid="stTextInputRootElement"] {{ border: none !important; background: transparent !important; }}
 .st-key-search_card [data-testid="stTextInput"] input {{ font-size: 1.15rem; padding: 14px 4px; background: transparent; }}
 .st-key-search_card [data-testid="InputInstructions"] {{ display: none; }}
 .st-key-search_card [data-testid="stFormSubmitButton"] button {{ padding: 0.95rem 1.6rem; white-space: nowrap; width: 100%; }}

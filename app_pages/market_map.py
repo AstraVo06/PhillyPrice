@@ -123,7 +123,7 @@ a higher {what}. Point at an area to see its neighborhood, ZIP code, and the num
                                                   bgcolor="rgba(255,255,255,0.85)",
                                                   tickprefix="$" if unit == "$" else "",
                                                   ticksuffix="%" if unit == "%" else "", tickformat=",.0f"))
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "scrollZoom": False})
+        st.plotly_chart(fig, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
     if is_sales:
         st.caption(f"Blank areas had fewer than {MIN_SALES} sales in the years picked. Sales where several homes "
                    "changed hands for one total price are left out.")
@@ -141,6 +141,6 @@ for col, title, rows, color in [(left, "Most expensive", ranked.tail(10).iloc[::
     bar.update_layout(title=dict(text=title, x=0), height=430, margin=dict(l=0, r=80, t=40, b=0),
                       yaxis=dict(autorange="reversed", type="category"), xaxis=dict(visible=False),
                       plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-    col.plotly_chart(bar, use_container_width=True, config={"displayModeBar": False, "scrollZoom": False})
+    col.plotly_chart(bar, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
 
 ui.footer()

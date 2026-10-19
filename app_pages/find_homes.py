@@ -86,7 +86,7 @@ with results:
         fig.update_layout(map=dict(style="carto-positron", zoom=10.4 if not zips else 12.4,
                                    center=dict(lat=float(on_map["lat"].median()), lon=float(on_map["lon"].median()))),
                           margin=dict(l=0, r=0, t=0, b=0), height=360)
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False, "scrollZoom": False})
+        st.plotly_chart(fig, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
         if len(found) > len(on_map):
             st.caption(f"The map shows the first {len(on_map):,} homes in this order.")
 
@@ -109,11 +109,11 @@ with results:
                         f'{home.total_livable_area:,.0f} sq ft · built {home.year_built:.0f}</div></div></div>',
                         unsafe_allow_html=True)
                     if st.button("Estimate this home", key=f"estimate_{home.Index}", icon=":material/sell:",
-                                 use_container_width=True):
+                                 width="stretch"):
                         st.session_state["search_request"] = f"{string.capwords(home.address.lower())}, Philadelphia, PA {home.zip_code}"
                         st.switch_page("app_pages/estimate.py")
         if len(found) > len(shown):
-            if st.button(f"Show more homes ({len(found) - len(shown):,} left)", use_container_width=True):
+            if st.button(f"Show more homes ({len(found) - len(shown):,} left)", width="stretch"):
                 st.session_state["find_shown"] += PAGE
                 st.rerun()
 

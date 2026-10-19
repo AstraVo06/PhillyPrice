@@ -6,7 +6,7 @@ from core.ui import money
 
 ui.hero("How it works", "Simple answers about where the price comes from and how much to trust it.", compact=True)
 
-ui.section("From address to price", eyebrow="Behind the scenes")
+ui.section("From address to price")
 ui.steps([
     ("We find the home",
      "The U.S. Census Bureau's address lookup gives us the ZIP code, the neighborhood (census tract), and the "
@@ -21,7 +21,7 @@ ui.steps([
      "You see a realistic range, what pushed the price up or down, and similar homes that sold nearby."),
 ])
 
-ui.section("Questions people ask", eyebrow="FAQ")
+ui.section("Questions people ask")
 with st.expander("How accurate is the estimate?", expanded=True):
     st.markdown("We tested it the way you'd use it: the model learned from 2019–2024 sales and then priced "
                 "20,282 homes that sold in 2025 and 2026, without seeing their prices.")

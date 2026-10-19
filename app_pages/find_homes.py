@@ -102,9 +102,9 @@ with results:
                 with col:
                     st.markdown(
                         f'<div class="pp-comp">{photos.picture_html(home.lat, home.lon, 150)}'
-                        f'<div class="top">Sold {money(home.sale_price)}</div><div class="body">'
+                        f'<div class="body"><div class="price">Sold {money(home.sale_price)} · {home.sale_date:%b %Y}</div>'
                         f'<div class="addr">{string.capwords(home.address.lower())}</div>'
-                        f'<div class="sub">{home.sale_date:%b %Y} · ZIP {home.zip_code}</div>'
+                        f'<div class="sub">ZIP {home.zip_code}</div>'
                         f'<div class="feat">{home.number_of_bedrooms:.0f} bd · {home.number_of_bathrooms:.0f} ba · '
                         f'{home.total_livable_area:,.0f} sq ft · built {home.year_built:.0f}</div></div></div>',
                         unsafe_allow_html=True)

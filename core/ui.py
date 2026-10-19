@@ -129,7 +129,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-pair {{ display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }}
 .pp-pcard {{ background: #fff; border: 1.5px solid {LINE}; border-radius: 18px; padding: 20px 24px; }}
 .pp-pcard.coral {{ background: {GOLD_TINT}; border-color: {GOLD_LINE}; }}
-.pp-label {{ color: {MUTED}; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }}
+.pp-label {{ color: {MUTED}; font-size: 0.9rem; font-weight: 600; }}
 .pp-label.coral {{ color: {GOLD_TEXT}; }}
 .pp-big {{ color: {INK}; font-size: clamp(1.9rem, 3.6vw, 2.7rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.15; margin-top: 4px; }}
 .pp-big.coral {{ color: {BLUE}; }}
@@ -151,8 +151,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-pic.map::after {{ content: ""; position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
                      border-radius: 50%; background: {GOLD}; border: 3px solid #fff; box-shadow: 0 2px 10px rgba(14,31,61,0.45); }}
 .pp-hero-pic .pp-pic {{ border-radius: 18px; margin-bottom: 10px; border: 1px solid {LINE}; }}
-.pp-howto {{ display: flex; gap: 12px; align-items: flex-start; background: {GOLD_TINT}; border: 1px solid {GOLD_LINE};
-             border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; color: {INK}; font-size: 0.95rem; line-height: 1.55; }}
+.pp-howto {{ display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid {GOLD};
+             padding: 4px 0 4px 14px; margin-bottom: 12px; color: {INK}; font-size: 0.95rem; line-height: 1.55; }}
 .pp-howto .material-symbols-rounded {{ color: {GOLD_TEXT}; font-size: 24px; }}
 .pp-facts {{ background: #fff; border: 1px solid {LINE}; border-radius: 18px; padding: 18px 22px; }}
 .pp-facts .f {{ display: flex; align-items: center; gap: 12px; padding: 7px 0; color: {INK}; font-weight: 600;
@@ -161,7 +161,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-facts .f .material-symbols-rounded {{ color: {BLUE}; font-size: 22px; }}
 .pp-facts .src {{ color: {MUTED}; font-size: 0.8rem; margin-top: 8px; }}
 .pp-comps {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 14px; }}
-.pp-comp {{ background: #fff; border: 1px solid {LINE}; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 14px rgba(12,17,28,0.06); }}
+.pp-comp {{ background: #fff; border: 1px solid {LINE}; border-radius: 12px; overflow: hidden; }}
+.pp-comp .price {{ font-weight: 800; color: {INK}; font-size: 1.02rem; margin-bottom: 4px; }}
 .pp-comp .top {{ background: {BLUE}; color: #fff; font-weight: 800; text-align: center; padding: 10px; }}
 .pp-comp .body {{ padding: 14px 16px; }}
 .pp-comp .addr {{ font-weight: 700; color: {INK}; }}
@@ -204,15 +205,11 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-band-card h4 {{ color: #fff; margin: 0 0 8px; font-size: 1.08rem; }}
 .pp-band-card p {{ color: #C4CBD8; margin: 0; font-size: 0.93rem; line-height: 1.55; }}
 
-.pp-steps {{ border-left: 3px solid {GOLD_TINT}; margin: 10px 0 0 14px; padding-left: 28px; }}
-.pp-step {{ position: relative; padding: 0 0 26px; }}
-.pp-step::before {{
-    content: ""; position: absolute; left: -37px; top: 6px; width: 15px; height: 15px; border-radius: 50%;
-    background: {GOLD}; box-shadow: 0 0 0 5px {GOLD_TINT};
-}}
-.pp-step .tag {{ display: inline-block; background: {BLUE}; color: #fff; border-radius: 999px; padding: 3px 12px; font-size: 0.8rem; font-weight: 700; }}
-.pp-step .h {{ margin: 8px 0 4px; font-size: 1.15rem; font-weight: 800; color: {INK}; }}
-.pp-step p {{ margin: 0; color: {MUTED}; }}
+.pp-steps {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; margin-top: 8px; }}
+.pp-step {{ border-top: 2px solid {INK}; padding-top: 14px; }}
+.pp-step .tag {{ color: {MUTED}; font-weight: 700; font-size: 0.85rem; }}
+.pp-step .h {{ margin: 4px 0 6px; font-size: 1.15rem; font-weight: 800; color: {INK}; }}
+.pp-step p {{ margin: 0; color: {MUTED}; line-height: 1.6; }}
 
 .pp-check {{ list-style: none; padding: 0; margin: 0; }}
 .pp-check li {{ padding: 8px 0 8px 24px; position: relative; color: {INK}; line-height: 1.6; border-bottom: 1px solid {LINE}; }}
@@ -277,6 +274,37 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .st-key-splash .stButton button p {{ color: inherit; font-weight: 800; }}
 .pp-splash-foot {{ position: fixed; bottom: 26px; left: max(28px, 8vw); right: 28px; color: rgba(255,255,255,0.7);
                   font-size: 0.88rem; animation: ppFade 1.2s .8s both; }}
+
+/* Result header and estimate panel */
+.pp-addr h2 {{ font-family: 'Archivo', sans-serif; font-stretch: 108%; font-size: clamp(1.6rem, 3.2vw, 2.3rem); font-weight: 800;
+              letter-spacing: -0.035em; margin: 34px 0 2px; padding: 0; color: {INK}; }}
+.pp-addr .hood {{ color: {MUTED}; font-size: 1rem; }}
+.pp-tabs {{ display: flex; gap: 26px; border-bottom: 1px solid {LINE}; margin: 18px 0 22px; overflow-x: auto; }}
+.pp-tabs a {{ color: {INK} !important; text-decoration: none !important; font-weight: 600; font-size: 0.95rem; padding: 10px 0;
+             border-bottom: 3px solid transparent; white-space: nowrap; }}
+.pp-tabs a:hover {{ border-bottom-color: {GOLD}; }}
+.pp-hero-pic .pp-pic {{ border-radius: 12px; }}
+.pp-est .k {{ color: {MUTED}; font-weight: 600; }}
+.pp-est .v {{ font-family: 'Archivo', sans-serif; font-stretch: 110%; font-weight: 800; font-size: clamp(2.6rem, 5vw, 3.6rem);
+             letter-spacing: -0.045em; color: {INK}; line-height: 1.05; margin: 2px 0 26px; }}
+.pp-est .bar {{ position: relative; height: 8px; background: {LINE}; border-radius: 4px; }}
+.pp-est .fill {{ position: absolute; top: 0; bottom: 0; background: {BLUE}; border-radius: 4px; opacity: 0.85; }}
+.pp-est .pin {{ position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
+               background: {GOLD}; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }}
+.pp-est .tick {{ position: absolute; top: -7px; width: 2px; height: 22px; background: {INK}; }}
+.pp-est .tick-lbl {{ position: absolute; top: -30px; transform: translateX(-50%); font-size: 0.75rem; color: {INK};
+                    font-weight: 600; white-space: nowrap; }}
+.pp-est .ends {{ display: flex; justify-content: space-between; font-size: 0.85rem; color: {MUTED}; margin-top: 8px; }}
+.pp-est .ends span:first-child, .pp-est .ends span:last-child {{ color: {INK}; font-weight: 700; }}
+.pp-est .facts {{ display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid {LINE}; border-bottom: 1px solid {LINE};
+                 margin: 22px 0 12px; }}
+.pp-est .facts div {{ padding: 12px 0; }}
+.pp-est .facts div + div {{ padding-left: 14px; border-left: 1px solid {LINE}; }}
+.pp-est .facts b {{ display: block; font-size: 1.25rem; color: {INK}; }}
+.pp-est .facts span {{ color: {MUTED}; font-size: 0.85rem; }}
+.pp-est .meta {{ color: {INK}; font-size: 0.92rem; line-height: 1.6; margin-bottom: 14px; }}
+.pp-est .meta span {{ color: {MUTED}; font-size: 0.8rem; }}
+.pp-compline {{ border-left: 4px solid {BLUE}; padding: 4px 0 4px 16px; margin: 26px 0 14px; color: {INK}; line-height: 1.65; }}
 
 /* Notes and clickable cards */
 .pp-note {{ max-width: 800px; margin: 10px auto 0; padding: 12px 18px; border-radius: 14px; background: #fff; color: {INK};
@@ -388,7 +416,7 @@ def feature_band():
 
 def steps(items):
     html = "".join(
-        f'<div class="pp-step"><span class="tag">Step {i}</span><div class="h">{title}</div><p>{text}</p></div>'
+        f'<div class="pp-step"><span class="tag">{i:02d}</span><div class="h">{title}</div><p>{text}</p></div>'
         for i, (title, text) in enumerate(items, start=1)
     )
     st.markdown(f'<div class="pp-steps">{html}</div>', unsafe_allow_html=True)

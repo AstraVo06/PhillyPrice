@@ -211,6 +211,13 @@ def suggest_homes(text, limit=1500):
     return found, homes.head(limit).reset_index(drop=True)
 
 
+def featured_homes():
+    """A few recently sold homes with good street photos, for visitors who just want to look around."""
+    picks = pd.read_csv(os.path.join(DATA_DIR, "featured_homes.csv"), dtype={"parcel_number": str})
+    homes = load_homes().set_index("parcel_number")
+    return homes.loc[picks["parcel_number"]].reset_index()
+
+
 def home_details(home):
     """The home's details from the city's records, with sensible fill-ins where a record is blank or zero."""
     def pick(value, low, high, fallback):

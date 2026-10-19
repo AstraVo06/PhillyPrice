@@ -135,6 +135,28 @@ def open_comp(address, zip_code):
     st.session_state["scroll_to_price"] = True
 
 
+def home_cards(rows, records, prefix):
+    """Clickable cards, four to a row. `records` holds the full home dicts by the rows' index."""
+    for row_start in range(0, len(rows), 4):
+        cols = st.columns(4, gap="small")
+        for col, (i, m) in zip(cols, rows.iloc[row_start:row_start + 4].iterrows()):
+            sold = (f"Sold {money_short(m['sale_price'])} · {m['sale_date']:%b %Y}"
+                    if m["sale_price"] >= 1000 and pd.notna(m["sale_date"]) else "No recent sale on record")
+            beds = f"{m['number_of_bedrooms']:.0f} bd · " if m["number_of_bedrooms"] >= 1 else ""
+            baths = f"{m['number_of_bathrooms']:.0f} ba · " if m["number_of_bathrooms"] >= 1 else ""
+            size = f"{m['total_livable_area']:,.0f} sq ft" if m["total_livable_area"] > 0 else "size unknown"
+            place = ins.tract_label(m["GEOID"]).split(" · ")[0] if isinstance(m["GEOID"], str) else ""
+            with col, st.container(key=f"compcard_{prefix}_{i}"):
+                st.markdown(
+                    f'<div class="pp-comp">{photos.picture_html(m["lat"], m["lon"], 150)}<div class="body">'
+                    f'<div class="price">{sold}</div>'
+                    f'<div class="addr">{nice_address(m["address"])}</div>'
+                    f'<div class="sub">{place or "ZIP"} · {m["zip_code"]:.0f}</div>'
+                    f'<div class="feat">{beds}{baths}{size}</div></div></div>', unsafe_allow_html=True)
+                st.button(f"Estimate {nice_address(m['address'])}", key=f"{prefix}_open_{i}", on_click=pick_home,
+                          args=(records[i],))
+
+
 def pick_home(home):
     st.session_state["picked_home"] = home
     st.session_state["scroll_to_price"] = True
@@ -199,8 +221,8 @@ def what_if(result):
         st.session_state["wi_year"] = min(max(base["year"], 1800), datetime.date.today().year)
         st.session_state["wi_last"] = result["price"]
 
-    ui.section("Play with the price", "Drag the sliders to see how a change would move the estimate. "
-               "Nothing is saved, so explore freely.", eyebrow="What if", anchor="whatif")
+    ui.section("What if?", "Drag the sliders to see how a change would move the estimate. "
+               "Nothing is saved, so explore freely.", anchor="whatif")
     with st.container(key="whatif"):
         sliders, readout = st.columns([1.15, 1], gap="large")
         with sliders:
@@ -320,25 +342,7 @@ if lookup in ("units", "pick"):
     else:
         with st.spinner("Loading home photos…"):
             photos.has_photos(list(zip(shown["lat"], shown["lon"])))  # fetch in parallel, cached for the cards
-        for row_start in range(0, len(shown), 4):
-            cols = st.columns(4, gap="small")
-            for col, (i, m) in zip(cols, shown.iloc[row_start:row_start + 4].iterrows()):
-                sold = (f"Last sold {money_short(m['sale_price'])} · {m['sale_date']:%Y}"
-                        if m["sale_price"] >= 1000 and pd.notna(m["sale_date"]) else "No recent sale on record")
-                beds = f"{m['number_of_bedrooms']:.0f} bd · " if m["number_of_bedrooms"] >= 1 else ""
-                baths = f"{m['number_of_bathrooms']:.0f} ba · " if m["number_of_bathrooms"] >= 1 else ""
-                size = f"{m['total_livable_area']:,.0f} sq ft" if m["total_livable_area"] > 0 else "size unknown"
-                built = f" · built {m['year_built']:.0f}" if m["year_built"] > 0 else ""
-                with col, st.container(key=f"compcard_pick_{i}"):
-                    st.markdown(
-                        f'<div class="pp-comp">{photos.picture_html(m["lat"], m["lon"], 140)}'
-                        f'<div class="top light">{sold}</div><div class="body">'
-                        f'<div class="addr">{nice_address(m["address"])}</div>'
-                        f'<div class="sub">ZIP {m["zip_code"]:.0f}</div>'
-                        f'<div class="feat">{beds}{baths}{size}{built}</div>'
-                        f'<div class="go">See the estimate →</div></div></div>', unsafe_allow_html=True)
-                    st.button(f"Estimate {nice_address(m['address'])}", key=f"pick_open_{i}", on_click=pick_home,
-                              args=(st.session_state["matches"][i],))
+        home_cards(shown, st.session_state["matches"], "pick")
         left = len(matches) - len(shown)
         if left > 0 and st.button(f"Show more homes ({left:,} left)", use_container_width=True):
             st.session_state["pick_shown"] += PICK_PAGE
@@ -372,59 +376,64 @@ if result:
     if home and "#" in home["address"]:
         title = nice_address(home["address"], zip_code)
 
-    ui.section(title, eyebrow="Your estimate", anchor="price")
+    tabs = [("price", "Overview"), ("whatif", "What if"), ("why", "Why this price"), ("map", "Map")]
+    tabs += ([("nearby", "Nearby sales")] if len(comps) else []) + [("area", "Neighborhood")]
+    st.markdown(f'<div id="pp-price"></div><div class="pp-addr"><h2>{title}</h2>'
+                f'<div class="hood">{ins.tract_label(location["GEOID"])}</div></div>'
+                '<nav class="pp-tabs">' + "".join(f'<a href="#pp-{k}">{v}</a>' for k, v in tabs) + "</nav>",
+                unsafe_allow_html=True)
     if st.session_state.pop("scroll_to_price", False):
         components.html("<script>setTimeout(() => window.parent.document.getElementById('pp-price')"
                         "?.scrollIntoView({behavior: 'smooth'}), 250);</script>", height=0)
-    photo_col, facts_col = st.columns([1.1, 1], gap="large")
+
+    d = st.session_state.get("used_details", details_now())
+    sold = result.get("last_sale")
+    price, low, high = result["price"], result["low"], result["high"]
+    nearby = comps["sale_price"].median() if len(comps) else None
+    axis_low = min([low] + ([nearby] if nearby else [])) * 0.92
+    axis_high = max([high] + ([nearby] if nearby else [])) * 1.04
+
+    def at(value):
+        return f"{100 * (value - axis_low) / (axis_high - axis_low):.1f}%"
+
+    tick = (f'<span class="tick" style="left:{at(nearby)}"></span>'
+            f'<span class="tick-lbl" style="left:{at(nearby)}">Nearby sales {money_short(nearby)}</span>') if nearby else ""
+    facts = [(d["beds"], "beds"), (d["baths"], "baths"), (f"{d['sqft']:,}", "sq ft"), (d["year"], "built")]
+    meta = [f"Condition: {CONDITION_CHOICES[d['condition']].lower()}"]
+    if sold:
+        meta.append(f"Last sold {money(sold['sale_price'])} in {sold['sale_date']:%b %Y}")
+
+    photo_col, est_col = st.columns([1.25, 1], gap="large")
     with photo_col:
-        st.markdown(f'<div class="pp-hero-pic">{photos.picture_html(location["latitude"], location["longitude"], 250)}</div>',
+        st.markdown(f'<div class="pp-hero-pic">{photos.picture_html(location["latitude"], location["longitude"], 360)}</div>',
                     unsafe_allow_html=True)
+    with est_col:
+        st.markdown(f"""
+<div class="pp-est">
+  <div class="k">PhillyPrice estimate</div>
+  <div class="v">{money(price)}</div>
+  <div class="bar"><span class="fill" style="left:{at(low)};width:calc({at(high)} - {at(low)})"></span>
+    <span class="pin" style="left:{at(price)}"></span>{tick}</div>
+  <div class="ends"><span>{money_short(low)}</span><span>Likely range</span><span>{money_short(high)}</span></div>
+  <div class="facts">{"".join(f"<div><b>{v}</b><span>{k}</span></div>" for v, k in facts)}</div>
+  <div class="meta">{" · ".join(meta)}<br><span>{"From the city's property records" if home else "From the details you entered"}</span></div>
+</div>""", unsafe_allow_html=True)
         b1, b2 = st.columns(2)
         b1.link_button("Street View", ins.street_view_url(location["latitude"], location["longitude"]),
                        icon=":material/streetview:", use_container_width=True)
         if home:
-            b2.link_button("City property record", ins.city_record_url(home["parcel_number"]),
+            b2.link_button("City record", ins.city_record_url(home["parcel_number"]),
                            icon=":material/description:", use_container_width=True)
-    with facts_col:
-        d = st.session_state.get("used_details", details_now())
-        facts = [
-            ("bed", f"{d['beds']} bedroom{'s' if d['beds'] != 1 else ''}"),
-            ("bathtub", f"{d['baths']} bathroom{'s' if d['baths'] != 1 else ''}"),
-            ("square_foot", f"{d['sqft']:,} sq ft"),
-            ("calendar_month", f"Built {d['year']}"),
-            ("handyman", f"Condition: {CONDITION_CHOICES[d['condition']].lower()}"),
-        ]
-        sold = result.get("last_sale")
-        if sold:
-            facts.append(("sell", f"Last sold {money(sold['sale_price'])} in {sold['sale_date']:%b %Y}"))
-        source = "From the city's property records" if home else "From the details you entered"
-        st.markdown(f'<div class="pp-facts"><div class="pp-label">Home facts</div>'
-                    + "".join(f'<div class="f"><span class="material-symbols-rounded">{i}</span>{t}</div>'
-                              for i, t in facts)
-                    + f'<div class="src">{source}</div></div>', unsafe_allow_html=True)
 
-    st.markdown(f"""
-<div class="pp-pair" style="margin-top:18px">
-  <div class="pp-pcard"><div class="pp-label">Suggested list price</div><div class="pp-big">{money(result["price"])}</div></div>
-  <div class="pp-arrow">→</div>
-  <div class="pp-pcard coral"><div class="pp-label coral">Realistic price range</div>
-    <div class="pp-big coral">{money_short(result["low"])} – {money_short(result["high"])}</div></div>
-</div>""", unsafe_allow_html=True)
-
-    notes = []
     if len(comps):
-        headline = f"Similar homes nearby sold for about {money_short(comps['sale_price'].median())}"
-        notes.append(f"That's the middle of {len(comps)} recent sales within {comps['distance_miles'].max():.1f} miles "
-                     f"with about the same size, which ranged from {money_short(comps['sale_price'].min())} to "
-                     f"{money_short(comps['sale_price'].max())}.")
+        line = (f"<b>Similar homes nearby sold for about {money_short(nearby)}.</b> That's the middle of {len(comps)} "
+                f"recent sales within {comps['distance_miles'].max():.1f} miles, from "
+                f"{money_short(comps['sale_price'].min())} to {money_short(comps['sale_price'].max())}.")
     else:
-        headline = "No similar sales close by"
-        notes.append("Compare with the neighborhood prices below instead.")
+        line = "<b>No similar sales close by.</b> Compare with the neighborhood prices below."
     if hood["zip_median_price"] == hood["zip_median_price"]:
-        notes.append(f"The typical single-family home in ZIP {zip_code} sold for {money(hood['zip_median_price'])}.")
-    st.markdown(f'<div class="pp-callout"><div class="t">{headline}</div><div class="s">{" ".join(notes)}</div></div>',
-                unsafe_allow_html=True)
+        line += f" The typical single-family home in ZIP {zip_code} sold for {money(hood['zip_median_price'])}."
+    st.markdown(f'<div class="pp-compline">{line}</div>', unsafe_allow_html=True)
 
     with st.expander("Renovated, or something looks off? Update the details"):
         with st.form("adjust_form", border=False):
@@ -489,12 +498,12 @@ if result:
             with col, st.container(key=f"compcard_{i}"):
                 st.markdown(
                     f'<div class="pp-comp">{photos.picture_html(c.lat, c.lon, 140)}'
-                    f'<div class="top">Sold {money(c.sale_price)}</div><div class="body">'
+                    f'<div class="body"><div class="price">Sold {money(c.sale_price)} · {c.sale_date:%b %Y}</div>'
                     f'<div class="addr">{nice_address(c.address)}</div>'
-                    f'<div class="sub">{c.sale_date:%b %Y} · {c.distance_miles:.2f} mi away</div>'
+                    f'<div class="sub">{c.distance_miles:.2f} mi away</div>'
                     f'<div class="feat">{c.number_of_bedrooms:.0f} bd · {c.number_of_bathrooms:.0f} ba · '
                     f'{c.total_livable_area:,.0f} sq ft · built {c.year_built:.0f}</div>'
-                    f'<div class="go">Estimate this home →</div></div></div>', unsafe_allow_html=True)
+                    '</div></div>', unsafe_allow_html=True)
                 st.button(f"Estimate {nice_address(c.address)}", key=f"comp_open_{i}", on_click=open_comp,
                           args=(c.address, int(c.zip_code) if c.zip_code == c.zip_code else None))
         st.page_link("app_pages/find_homes.py", label="Browse more sold homes", icon=":material/arrow_forward:")
@@ -509,18 +518,24 @@ if result:
     ])
     st.caption("The estimate can't see a new kitchen, the layout, natural light, or street noise. Use the "
                "nearby sales and what you know about the home to adjust it.")
-    ui.floating_nav([("price", "Price"), ("whatif", "What if"), ("why", "Why"), ("map", "Map")]
-                    + ([("nearby", "Nearby sales")] if len(comps) else []) + [("area", "Area")])
 
 # --------------------------------------------------
 # Below the fold
 # --------------------------------------------------
 
-ui.feature_band()
-ui.section("How it works", eyebrow="Three simple steps")
+if not result and lookup not in ("units", "pick", "notfound"):
+    ui.section("Just looking? Start with one of these",
+               "Homes that sold recently around Philadelphia. Click one to see what it would list for today.",
+               anchor="explore")
+    featured = ins.featured_homes()
+    with st.spinner("Loading home photos…"):
+        photos.has_photos(list(zip(featured["lat"], featured["lon"])))
+    home_cards(featured, featured.to_dict("records"), "featured")
+
+ui.section("How it works")
 ui.steps([
     ("Search the address", "We find the home in the city's records and fill in its details for you."),
     ("Check the details", "Renovated or something's off? Update bedrooms, size, or condition in one click."),
-    ("Get a price you can explain", "A suggested price, a realistic range, the reasons behind it, and nearby sales."),
+    ("Get a price you can explain", "A suggested price, a likely range, the reasons behind it, and nearby sales."),
 ])
 ui.footer()

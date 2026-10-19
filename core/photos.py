@@ -89,7 +89,7 @@ def street_view_jpeg(lat, lon, size="480x300"):
 
 
 def map_thumbnail_style(lat, lon, zoom=18):
-    """CSS background that draws 3x3 OpenStreetMap tiles with the home in the center."""
+    """CSS background that draws 5x3 OpenStreetMap tiles with the home in the center."""
     n = 2 ** zoom
     x_float = (lon + 180) / 360 * n
     y_float = (1 - math.asinh(math.tan(math.radians(lat))) / math.pi) / 2 * n
@@ -97,7 +97,7 @@ def map_thumbnail_style(lat, lon, zoom=18):
     px, py = (x_float - x) * 256, (y_float - y) * 256
     images, positions = [], []
     for dy in (-1, 0, 1):
-        for dx in (-1, 0, 1):
+        for dx in (-2, -1, 0, 1, 2):
             images.append(f"url('https://tile.openstreetmap.org/{zoom}/{x + dx}/{y + dy}.png')")
             positions.append(f"calc(50% + {dx * 256 - px:.0f}px) calc(50% + {dy * 256 - py:.0f}px)")
     return (f"background-image:{','.join(images)};background-position:{','.join(positions)};"

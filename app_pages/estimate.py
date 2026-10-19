@@ -451,11 +451,17 @@ if result:
                 '<nav class="pp-tabs">' + "".join(f'<a href="#pp-{k}">{v}</a>' for k, v in tabs) + "</nav>",
                 unsafe_allow_html=True)
     if st.session_state.pop("scroll_to_price", False):
-        # Try twice: a slow connection can still be drawing the page the first time.
-        st.html("<script>const goTo = () => { const el = document.getElementById('pp-price');"
-                " if (el && Math.abs(el.getBoundingClientRect().top) > 120)"
-                " el.scrollIntoView({behavior: 'smooth', block: 'start'}); };"
-                " setTimeout(goTo, 300); setTimeout(goTo, 1200);</script>", unsafe_allow_javascript=True)
+        # A new number each time, so the browser runs the script again on every click. It retries for about two
+        # seconds because a slow connection can still be drawing the page.
+        st.session_state["scroll_nonce"] = st.session_state.get("scroll_nonce", 0) + 1
+        st.html(f"""<script>/* scroll {st.session_state["scroll_nonce"]} */ (() => {{
+  const run = (triesLeft) => {{
+    const el = document.getElementById("pp-price");
+    if (el && Math.abs(el.getBoundingClientRect().top) > 80) el.scrollIntoView({{block: "start"}});
+    if (triesLeft > 0) setTimeout(() => run(triesLeft - 1), 400);
+  }};
+  setTimeout(() => run(5), 200);
+}})();</script>""", unsafe_allow_javascript=True)
 
     d = st.session_state.get("used_details", details_now())
     sold = result.get("last_sale")

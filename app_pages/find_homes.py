@@ -101,18 +101,23 @@ with results:
             cols = st.columns(3)
             for col, home in zip(cols, shown.iloc[start:start + 3].itertuples()):
                 with col:
-                    st.markdown(
-                        f'<div class="pp-comp">{photos.picture_html(home.lat, home.lon, 150)}'
-                        f'<div class="body"><div class="price">Sold {money(home.sale_price)}</div>'
-                        f'<div class="addr">{string.capwords(home.address.lower())}</div>'
-                        f'<div class="sub">{home.sale_date:%b %Y} · {ins.zip_label(home.zip_code)}</div>'
-                        f'<div class="feat">{home.number_of_bedrooms:.0f} bd · {home.number_of_bathrooms:.0f} ba · '
-                        f'{home.total_livable_area:,.0f} sq ft · built {home.year_built:.0f}</div></div></div>',
-                        unsafe_allow_html=True)
-                    if st.button("Estimate this home", key=f"estimate_{home.Index}", icon=":material/sell:",
-                                 width="stretch"):
-                        st.switch_page("app_pages/estimate.py", query_params={
-                            "q": f"{string.capwords(home.address.lower())}, Philadelphia, PA {home.zip_code}"})
+                    address = f"{string.capwords(home.address.lower())}, Philadelphia, PA {home.zip_code}"
+                    # The whole card is clickable (an invisible button covers it), as is the button below it.
+                    with st.container(key=f"compcard_find_{home.Index}"):
+                        st.markdown(
+                            f'<div class="pp-comp">{photos.picture_html(home.lat, home.lon, 150)}'
+                            f'<div class="body"><div class="price">Sold {money(home.sale_price)}</div>'
+                            f'<div class="addr">{string.capwords(home.address.lower())}</div>'
+                            f'<div class="sub">{home.sale_date:%b %Y} · {ins.zip_label(home.zip_code)}</div>'
+                            f'<div class="feat">{home.number_of_bedrooms:.0f} bd · {home.number_of_bathrooms:.0f} ba · '
+                            f'{home.total_livable_area:,.0f} sq ft · built {home.year_built:.0f}</div></div></div>',
+                            unsafe_allow_html=True)
+                        card_clicked = st.button(f"Estimate {address}", key=f"card_{home.Index}")
+                    button_clicked = st.button("Estimate this home", key=f"estimate_{home.Index}",
+                                               icon=":material/sell:", width="stretch")
+                    if card_clicked or button_clicked:
+                        st.session_state["scroll_to_price"] = True
+                        st.switch_page("app_pages/estimate.py", query_params={"q": address})
         if len(found) > len(shown):
             if st.button(f"Show more homes ({len(found) - len(shown):,} left)", width="stretch"):
                 st.session_state["find_shown"] += PAGE

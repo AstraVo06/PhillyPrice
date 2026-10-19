@@ -289,6 +289,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 [class*="st-key-compcard_"]:hover .pp-comp {{ transform: translateY(-5px); box-shadow: 0 16px 34px rgba(14,31,61,0.16); border-color: {GOLD}; }}
 [class*="st-key-compcard_"]:hover .pp-pic img {{ transform: scale(1.06); }}
 .pp-comp {{ height: 100%; }}
+.pp-comp .top.light {{ background: {GOLD_TINT}; color: {BLUE}; font-weight: 700; font-size: 0.9rem; }}
 .pp-comp .go {{ margin-top: 10px; color: {BLUE}; font-weight: 700; font-size: 0.9rem; }}
 
 /* Audience cards and notes (About) */

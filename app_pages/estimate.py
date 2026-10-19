@@ -1,6 +1,7 @@
 import datetime
 import string
 
+import pandas as pd
 import plotly.graph_objects as go
 import requests
 import streamlit as st
@@ -22,6 +23,7 @@ CONDITION_CHOICES = {
     1: "Brand new",
 }
 EXAMPLE_ADDRESS = "2618 Jasper St, Philadelphia, PA 19125"
+PICK_PAGE = 12
 DETAIL_DEFAULTS = {"beds": 3, "baths": 1, "sqft": 1200, "year": 1925, "condition": 4}
 
 # A search can be started from another page (Find homes) by setting "search_request".
@@ -92,7 +94,7 @@ def note(message, kind="info"):
 
 def run_search(query):
     query = query.strip()
-    for key in ["result", "home", "matches", "typed_address", "streets"]:
+    for key in ["result", "home", "matches", "typed_address", "streets", "pick_filter"]:
         st.session_state.pop(key, None)
     if not query:
         st.session_state["lookup"] = None
@@ -133,10 +135,9 @@ def open_comp(address, zip_code):
     st.session_state["scroll_to_price"] = True
 
 
-def home_label(m):
-    size = f" · {m['total_livable_area']:,.0f} sq ft" if m["total_livable_area"] == m["total_livable_area"] else ""
-    beds = f" · {m['number_of_bedrooms']:.0f} bd" if m["number_of_bedrooms"] == m["number_of_bedrooms"] else ""
-    return f"{nice_address(m['address'])}  ·  {m['zip_code']:.0f}{beds}{size}"
+def pick_home(home):
+    st.session_state["picked_home"] = home
+    st.session_state["scroll_to_price"] = True
 
 
 def counter_html(start, end, base, pct, zip_code, sales_count):
@@ -282,33 +283,66 @@ if searched or st.session_state.pop("pending_search", False):
 
 lookup = st.session_state.get("lookup")
 
+if st.session_state.get("picked_home"):
+    select_home(st.session_state.pop("picked_home"))
+    lookup = st.session_state.get("lookup")
+
 if lookup in ("units", "pick"):
-    matches = st.session_state["matches"]
+    matches = pd.DataFrame(st.session_state["matches"])
     typed = st.session_state.get("typed_address", "")
     if lookup == "units":
-        ui.section("Which unit?", f"We found {len(matches)} homes at this address. Pick one to see its estimate.")
+        title, intro = "Which unit?", f"We found {len(matches)} homes at this address. "
     else:
-        streets = st.session_state["streets"]
-        names = " and ".join(string.capwords(s.lower()) for s in streets[:2])
-        exact = sum(m.get("gap") == 0 for m in matches)
+        names = " and ".join(string.capwords(s.lower()) for s in st.session_state["streets"][:2])
+        exact = int((matches.get("gap") == 0).sum()) if "gap" in matches else 0
+        title = f"Homes on {names}"
         if exact:
             intro = f"{exact} homes match that address. "
         elif typed[:1].isdigit():
-            intro = "We couldn't find that exact house number, so here are the closest ones. "
+            intro = "We couldn't find that exact house number, so the closest ones come first. "
         else:
             intro = f"We found {len(matches):,} homes. "
-        ui.section(f"Homes on {names}", intro
-                   + "Pick one, or type in the box to narrow it down.")
-    with st.container(key="pick_card"):
-        choice = st.selectbox("Home", range(len(matches)), format_func=lambda i: home_label(matches[i]),
-                              label_visibility="collapsed", placeholder="Type a house number…",
-                              index=0 if lookup == "units" or typed[:1].isdigit() else None)
-        b1, b2 = st.columns([1, 2], vertical_alignment="center")
-        if b1.button("Show this home", type="primary", icon=":material/arrow_forward:", disabled=choice is None):
-            select_home(matches[choice])
-            lookup = "found"
-        if lookup == "pick":
-            b2.button("Not on the list? Enter the details myself", type="tertiary", on_click=enter_details_myself)
+    ui.section(title, intro + "Click a home to see its estimate.", anchor="picks")
+
+    filter_col, other_col = st.columns([1, 2], vertical_alignment="bottom")
+    number = filter_col.text_input("Filter by house number", key="pick_filter", placeholder="e.g. 2618",
+                                   max_chars=6).strip()
+    if lookup == "pick":
+        other_col.button("Not on the list? Enter the details myself", type="tertiary", on_click=enter_details_myself)
+    if number:
+        matches = matches[matches["address"].str.startswith(number)]
+    if st.session_state.get("pick_for") != (typed, number):
+        st.session_state["pick_for"], st.session_state["pick_shown"] = (typed, number), PICK_PAGE
+    shown = matches.head(st.session_state["pick_shown"])
+
+    if shown.empty:
+        note(f"No house number starting with <b>{number}</b> on this street.")
+    else:
+        with st.spinner("Loading home photos…"):
+            photos.has_photos(list(zip(shown["lat"], shown["lon"])))  # fetch in parallel, cached for the cards
+        for row_start in range(0, len(shown), 4):
+            cols = st.columns(4, gap="small")
+            for col, (i, m) in zip(cols, shown.iloc[row_start:row_start + 4].iterrows()):
+                sold = (f"Last sold {money_short(m['sale_price'])} · {m['sale_date']:%Y}"
+                        if m["sale_price"] >= 1000 and pd.notna(m["sale_date"]) else "No recent sale on record")
+                beds = f"{m['number_of_bedrooms']:.0f} bd · " if m["number_of_bedrooms"] >= 1 else ""
+                baths = f"{m['number_of_bathrooms']:.0f} ba · " if m["number_of_bathrooms"] >= 1 else ""
+                size = f"{m['total_livable_area']:,.0f} sq ft" if m["total_livable_area"] > 0 else "size unknown"
+                built = f" · built {m['year_built']:.0f}" if m["year_built"] > 0 else ""
+                with col, st.container(key=f"compcard_pick_{i}"):
+                    st.markdown(
+                        f'<div class="pp-comp">{photos.picture_html(m["lat"], m["lon"], 140)}'
+                        f'<div class="top light">{sold}</div><div class="body">'
+                        f'<div class="addr">{nice_address(m["address"])}</div>'
+                        f'<div class="sub">ZIP {m["zip_code"]:.0f}</div>'
+                        f'<div class="feat">{beds}{baths}{size}{built}</div>'
+                        f'<div class="go">See the estimate →</div></div></div>', unsafe_allow_html=True)
+                    st.button(f"Estimate {nice_address(m['address'])}", key=f"pick_open_{i}", on_click=pick_home,
+                              args=(st.session_state["matches"][i],))
+        left = len(matches) - len(shown)
+        if left > 0 and st.button(f"Show more homes ({left:,} left)", use_container_width=True):
+            st.session_state["pick_shown"] += PICK_PAGE
+            st.rerun()
 
 if lookup == "notfound" and not st.session_state.get("result"):
     ui.section("Tell us about the home",

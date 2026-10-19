@@ -266,29 +266,29 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 
 /* Intro screen */
 .st-key-splash {{
-    position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; align-items: flex-start;
-    justify-content: flex-end; gap: 0 !important; text-align: left; padding: 0 max(28px, 8vw) max(96px, 13vh);
-    background: linear-gradient(180deg, rgba(10,24,48,0.10) 0%, rgba(10,24,48,0.25) 38%, rgba(10,24,48,0.88) 74%),
-                linear-gradient(90deg, rgba(10,24,48,0.55) 0%, rgba(10,24,48,0) 65%),
+    position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 0 !important; text-align: center; padding: 8vh 24px 0;
+    background: linear-gradient(180deg, rgba(10,24,48,0.35) 0%, rgba(10,24,48,0.55) 50%, rgba(10,24,48,0.85) 100%),
                 url('{HERO_PHOTO}') center 40%/cover;
     animation: ppFade 0.8s both;
 }}
-.st-key-splash [data-testid="stElementContainer"] {{ width: auto !important; display: flex; justify-content: flex-start; }}
-.pp-splash-mark {{ display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; font-size: 1rem;
-                  margin-bottom: 26px; animation: ppRise .9s .1s both; }}
+.st-key-splash [data-testid="stElementContainer"] {{ width: auto !important; display: flex; justify-content: center; }}
+.pp-splash-mark {{ display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; font-weight: 700;
+                  font-size: 1rem; margin-bottom: 18px; animation: ppRise .9s .1s both; }}
 .pp-splash-mark .bar {{ width: 34px; height: 4px; background: {GOLD}; border-radius: 2px; }}
 .pp-splash-title {{ font-family: 'Archivo', sans-serif; font-stretch: 115%; font-weight: 900; color: #fff;
-                   font-size: clamp(3.4rem, 10.5vw, 8.4rem); line-height: 1.08; letter-spacing: -0.045em;
-                   margin: 0 0 22px; padding-bottom: 0.06em; animation: ppRise 1s .2s both; }}
+                   font-size: clamp(3.2rem, 8.5vw, 7rem); line-height: 1.08; letter-spacing: -0.045em;
+                   margin: 0 0 18px; padding-bottom: 0.06em; animation: ppRise 1s .2s both;
+                   text-shadow: 0 4px 30px rgba(10,24,48,0.45); }}
 .pp-splash-title span {{ color: {GOLD}; }}
-.pp-splash-sub {{ color: rgba(255,255,255,0.88); font-size: clamp(1.05rem, 1.6vw, 1.3rem); line-height: 1.55; max-width: 540px;
-                 margin-bottom: 34px; animation: ppRise 1s .35s both; }}
+.pp-splash-sub {{ color: rgba(255,255,255,0.92); font-size: clamp(1.05rem, 1.6vw, 1.3rem); line-height: 1.55; max-width: 600px;
+                 margin: 0 auto 30px; animation: ppRise 1s .35s both; }}
 .st-key-splash .stButton button {{ background: {GOLD}; color: {INK}; border: none; border-radius: 999px;
     padding: 0.85rem 2.2rem; font-weight: 800; font-size: 1.08rem; animation: ppRise 1s .5s both;
     box-shadow: 0 12px 34px rgba(0,0,0,0.3); transition: transform .2s ease, background .2s ease; }}
-.st-key-splash .stButton button:hover {{ background: #fff; color: {BLUE}; transform: translateX(4px); }}
+.st-key-splash .stButton button:hover {{ background: #fff; color: {BLUE}; transform: scale(1.04); }}
 .st-key-splash .stButton button p {{ color: inherit; font-weight: 800; }}
-.pp-splash-foot {{ position: fixed; bottom: 26px; left: max(28px, 8vw); right: 28px; color: rgba(255,255,255,0.7);
+.pp-splash-foot {{ position: fixed; bottom: 26px; left: 24px; right: 24px; text-align: center; color: rgba(255,255,255,0.7);
                   font-size: 0.88rem; animation: ppFade 1.2s .8s both; }}
 
 /* Result header and estimate panel */

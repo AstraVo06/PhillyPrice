@@ -10,6 +10,7 @@ from core import ui
 from core.ui import money
 
 MIN_SALES = 10
+MAP_HEIGHT = 640
 CENSUS_METRICS = {
     "Typical household income": ("median_household_income", "$"),
     "Typical rent": ("median_gross_rent", "$"),
@@ -22,19 +23,23 @@ ui.hero("Market map", "See which Philadelphia neighborhoods cost the most, and h
 panel, map_col = st.columns([1, 2.7], gap="medium")
 with panel:
     with st.container(border=True):
-        view = st.segmented_control("Map view", ["3D city", "Flat map"], default="3D city",
-                                    label_visibility="collapsed") or "3D city"
+        view = st.segmented_control("Map view", ["Flat map", "3D city"], default="Flat map",
+                                    label_visibility="collapsed") or "Flat map"
         st.markdown("**Show on the map**")
         metric = st.radio("Show on the map", list(ins.SALES_METRICS) + list(CENSUS_METRICS),
                           label_visibility="collapsed")
         is_sales = metric in ins.SALES_METRICS
-        st.markdown("**Years of sales**")
-        first_year, last_year = st.select_slider("Years of sales", options=list(range(2019, 2027)),
-                                                 value=(2019, 2026), label_visibility="collapsed",
-                                                 disabled=not is_sales)
+        if is_sales:
+            st.markdown("**Years of sales**")
+            first_year, last_year = st.select_slider("Years of sales", options=list(range(2019, 2027)),
+                                                     value=(2019, 2026), label_visibility="collapsed")
+        else:
+            first_year, last_year = 2019, 2026
+            st.caption("Income, rent, and homeownership come from the Census Bureau's 2020–2024 survey, so there "
+                       "are no years to pick. Choose a sales measure to compare years.")
         st.markdown("**Jump to an area**")
         centers = ins.zip_centers()
-        zoom_zip = st.selectbox("Jump to a ZIP code", ["All of Philadelphia"] + [str(z) for z in centers.index],
+        zoom_zip = st.selectbox("Jump to an area", ["All of Philadelphia"] + [str(z) for z in centers.index],
                                 label_visibility="collapsed", format_func=ins.zip_label)
         st.caption("Data: city sales records for single-family homes, and the Census Bureau's 2024 "
                    "American Community Survey for income, rent, and homeownership.")
@@ -57,10 +62,14 @@ if is_sales:
 else:
     shown["detail"] = "Census Bureau, 2020–2024 average"
 
+# The area picked in the panel is shown in color; the rest of the city fades to gray.
+selected = None if zoom_zip == "All of Philadelphia" else zoom_zip
+shown["zip"] = shown["GEOID"].map(ins.load_tract_names()["zip_code"])
+shown["in_area"] = True if selected is None else shown["zip"] == selected
 center, zoom = {"lat": 40.0, "lon": -75.13}, 10.15
-if zoom_zip != "All of Philadelphia":
-    point = centers.loc[int(zoom_zip)]
-    center, zoom = {"lat": float(point["lat"]), "lon": float(point["lon"])}, 12.6
+if selected:
+    point = centers.loc[int(selected)]
+    center, zoom = {"lat": float(point["lat"]), "lon": float(point["lon"])}, 12.4
 
 BLUE_STOPS = np.array([[234, 240, 248], [169, 192, 224], [91, 130, 190], [27, 58, 107], [10, 24, 48]])
 
@@ -73,13 +82,40 @@ def ramp(t):
     return [int(v) for v in BLUE_STOPS[i] * (1 - mix) + BLUE_STOPS[i + 1] * mix] + [215]
 
 
+def area_summary(zip_code):
+    """Headline numbers for one ZIP code: sales measures for the years picked, census measures, and price rank."""
+    sales = ins.market_sales()
+    sales = sales[sales["year"].between(first_year, last_year)]
+    here = sales[sales["zip_code"] == int(zip_code)]
+    by_zip = sales.groupby("zip_code")["sale_price"].agg(["median", "size"])
+    by_zip = by_zip[by_zip["size"] >= 30].sort_values("median", ascending=False)
+    rank = list(by_zip.index).index(int(zip_code)) + 1 if int(zip_code) in by_zip.index else None
+    tracts = ins.load_tract_names()
+    geoids = tracts.index[tracts["zip_code"] == str(zip_code)]
+    census = mb.tract_lookup[mb.tract_lookup["GEOID"].isin(geoids)]
+    cards = [
+        (money(here["sale_price"].median()) if len(here) else "n/a",
+         f"Typical sale price, {period}" + (f" · #{rank} of {len(by_zip)} areas" if rank else "")),
+        (f"${here['price_per_sqft'].median():,.0f}" if len(here) else "n/a", "Price per square foot"),
+        (f"{len(here):,}", f"Single-family sales, {period}"),
+        (money(census["median_household_income"].median()), "Typical household income"),
+        (f"{money(census['median_gross_rent'].median())}/mo", "Typical rent"),
+        (f"{census['owner_occupied_pct'].median():.0f}%", "Homes lived in by their owners"),
+    ]
+    return cards
+
+
 low, high = shown["value"].quantile(0.05), shown["value"].quantile(0.95)
 with map_col:
     what = metric.lower() if metric != "Number of sales" else "how many homes sold"
     st.markdown(f"""<div class="pp-howto"><span class="material-symbols-rounded">lightbulb</span><div>
 <b>How to read this map.</b> Each shape is a small neighborhood area. Darker {"and taller " if view == "3D city" else ""}means
-a higher {what}. Point at an area to see its neighborhood, ZIP code, and the number behind the color.
+a higher {what}. {"Click or point at" if view == "Flat map" else "Point at"} an area to see its neighborhood, ZIP code,
+and the number behind the color. Pick an area on the left to highlight it.
 {"Use the years slider to compare different periods." if is_sales else ""}</div></div>""", unsafe_allow_html=True)
+    if selected:
+        st.markdown(f"**{ins.zip_label(selected)}**")
+        ui.stat_cards(area_summary(selected), columns=3)
     if view == "3D city":
         values = shown.set_index("GEOID")
         rows = []
@@ -94,7 +130,8 @@ a higher {what}. Point at an area to see its neighborhood, ZIP code, and the num
             for polygon in polygons:
                 rows.append({"polygon": polygon[0], "place": item["place"], "value_text": item["value_text"],
                              "detail": item["detail"],
-                             "elevation": 40 + t * 1700, "color": ramp(t)})
+                             "elevation": 40 + t * 1700 if item["in_area"] else 30,
+                             "color": ramp(t) if item["in_area"] else [205, 210, 218, 110]})
         layer = pdk.Layer("PolygonLayer", rows, get_polygon="polygon", extruded=True, get_elevation="elevation",
                           get_fill_color="color", get_line_color=[255, 255, 255, 90], line_width_min_pixels=0.5,
                           pickable=True, auto_highlight=True, highlight_color=[242, 178, 51, 235])
@@ -107,18 +144,27 @@ a higher {what}. Point at an area to see its neighborhood, ZIP code, and the num
                      "style": {"backgroundColor": ui.DEEP, "color": "white", "fontFamily": "Public Sans",
                                "borderRadius": "10px", "padding": "8px 12px"}},
         )
-        st.pydeck_chart(deck, height=640)
+        st.pydeck_chart(deck, height=MAP_HEIGHT)
         st.caption("Taller and darker means higher. Drag to move, scroll to zoom, and hold right-click "
                    "(or Ctrl) while dragging to tilt and spin the city.")
     else:
+        colored, faded = shown[shown["in_area"]], shown[~shown["in_area"]]
         fig = px.choropleth_map(
-            shown, geojson=ins.load_tract_shapes(), locations="GEOID", featureidkey="properties.GEOID", color="value",
-            color_continuous_scale=["#EAF0F8", "#A9C0E0", "#5B82BE", "#1B3A6B", "#0A1830"],
-            range_color=(low, high), map_style="carto-positron", zoom=zoom, center=center, opacity=0.78,
+            colored, geojson=ins.load_tract_shapes(), locations="GEOID", featureidkey="properties.GEOID",
+            color="value", color_continuous_scale=["#EAF0F8", "#A9C0E0", "#5B82BE", "#1B3A6B", "#0A1830"],
+            range_color=(low, high), map_style="carto-positron", zoom=zoom, center=center, opacity=0.8,
             custom_data=["place", "value_text", "detail"],
         )
         fig.update_traces(hovertemplate=f"<b>%{{customdata[0]}}</b><br>{metric}: <b>%{{customdata[1]}}</b><br>%{{customdata[2]}}<extra></extra>")
-        fig.update_layout(height=640, margin=dict(l=0, r=0, t=0, b=0),
+        if len(faded):
+            fig.add_trace(go.Choroplethmap(
+                geojson=ins.load_tract_shapes(), locations=faded["GEOID"], featureidkey="properties.GEOID",
+                z=[0] * len(faded), colorscale=[[0, "#CDD2DA"], [1, "#CDD2DA"]], showscale=False,
+                marker=dict(opacity=0.45, line=dict(width=0.3, color="#ffffff")),
+                customdata=faded[["place", "value_text", "detail"]].values,
+                hovertemplate=f"<b>%{{customdata[0]}}</b><br>{metric}: <b>%{{customdata[1]}}</b><br>%{{customdata[2]}}<extra></extra>"))
+        fig.update_layout(height=MAP_HEIGHT, margin=dict(l=0, r=0, t=0, b=0),
+                          hoverlabel=dict(bgcolor=ui.DEEP, font=dict(color="white", family="Public Sans")),
                           coloraxis_colorbar=dict(title="", len=0.5, thickness=14, x=0.99, xanchor="right",
                                                   bgcolor="rgba(255,255,255,0.85)",
                                                   tickprefix="$" if unit == "$" else "",

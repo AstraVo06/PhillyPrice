@@ -199,6 +199,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 
 /* Cards and sections */
 .maplibregl-map {{ position: relative; }}
+/* With this Streamlit/deck.gl version the 3D map's hover box is drawn one map-height (640px) above the mouse. */
+[data-testid="stDeckGlJsonChart"] .deck-tooltip {{ margin-top: 640px; }}
 .maplibregl-ctrl-bottom-right {{ position: absolute !important; right: 0; bottom: 0; z-index: 2; }}
 .maplibregl-ctrl-attrib {{ font-size: 10px; background: rgba(255,255,255,0.8); padding: 1px 6px; }}
 .maplibregl-ctrl-attrib-button {{ display: none; }}

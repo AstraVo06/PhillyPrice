@@ -12,7 +12,7 @@ The site fills in the home's details from the city's property records (or the vi
 - a market map of prices, incomes, and rents by neighborhood, with a 3D city view
 - price trends since 2019 by ZIP code, and mortgage rates
 
-**Live website:** _add the Streamlit Community Cloud link here_
+**Live website:** https://phillyprice.streamlit.app
 
 ## Course project
 

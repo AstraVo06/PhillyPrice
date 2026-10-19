@@ -447,8 +447,11 @@ if result:
                 '<nav class="pp-tabs">' + "".join(f'<a href="#pp-{k}">{v}</a>' for k, v in tabs) + "</nav>",
                 unsafe_allow_html=True)
     if st.session_state.pop("scroll_to_price", False):
-        st.html("<script>setTimeout(() => document.getElementById('pp-price')"
-                "?.scrollIntoView({behavior: 'smooth', block: 'start'}), 300);</script>", unsafe_allow_javascript=True)
+        # Try twice: a slow connection can still be drawing the page the first time.
+        st.html("<script>const goTo = () => { const el = document.getElementById('pp-price');"
+                " if (el && Math.abs(el.getBoundingClientRect().top) > 120)"
+                " el.scrollIntoView({behavior: 'smooth', block: 'start'}); };"
+                " setTimeout(goTo, 300); setTimeout(goTo, 1200);</script>", unsafe_allow_javascript=True)
 
     d = st.session_state.get("used_details", details_now())
     sold = result.get("last_sale")

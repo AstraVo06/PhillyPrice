@@ -30,7 +30,9 @@ if pending:
         st.switch_page(estimate)
 
 # Intro screen the first time a visitor lands on the home page.
-if not st.session_state.get("entered") and not account.signed_in() and current.title == "Estimate":
+# It's skipped for shared links to a home (?q=...), so they open straight to the estimate.
+if (not st.session_state.get("entered") and not account.signed_in() and current.title == "Estimate"
+        and not st.query_params.get("q")):
     from core import insights as ins
     sales = ins.load_sales()
     if ui.splash(len(ins.load_homes()), len(sales), sales["sale_date"].max()):

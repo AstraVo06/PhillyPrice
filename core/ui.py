@@ -82,6 +82,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-hero h1 em {{ font-style: normal; color: {GOLD}; }}
 .pp-hero p {{ color: rgba(255,255,255,0.93); font-size: clamp(1.05rem, 2vw, 1.3rem); max-width: 760px; margin: 0; }}
 .pp-hero.pp-compact {{ min-height: 280px; padding: 70px 24px; }}
+[data-testid="stElementContainer"]:has(.pp-hero.pp-compact) {{ margin-bottom: 30px; }}
 .pp-hero.pp-compact h1 {{ font-size: clamp(2rem, 4.5vw, 3.3rem); }}
 
 /* Address search inside the home hero */

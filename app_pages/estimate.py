@@ -308,7 +308,7 @@ if lookup in ("units", "pick"):
     number = filter_col.text_input("Filter by house number", key="pick_filter", placeholder="e.g. 2618",
                                    max_chars=6).strip()
     if lookup == "pick":
-        other_col.button("Not on the list? Enter the details myself", type="tertiary", on_click=enter_details_myself)
+        other_col.button("Not on the list? Enter the details yourself", type="tertiary", on_click=enter_details_myself)
     if number:
         matches = matches[matches["address"].str.startswith(number)]
     if st.session_state.get("pick_for") != (typed, number):

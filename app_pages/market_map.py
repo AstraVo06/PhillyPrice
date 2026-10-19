@@ -104,7 +104,7 @@ a higher {what}. Point at an area to see its neighborhood, ZIP code, and the num
                                              longitude=center["lon"], zoom=zoom + 0.25,
                                              pitch=52, bearing=-18),
             tooltip={"html": f"<b>{{place}}</b><br/>{metric}: <b>{{value_text}}</b><br/><span style='opacity:.75'>{{detail}}</span>",
-                     "style": {"backgroundColor": ui.DEEP, "color": "white", "fontFamily": "Plus Jakarta Sans",
+                     "style": {"backgroundColor": ui.DEEP, "color": "white", "fontFamily": "Public Sans",
                                "borderRadius": "10px", "padding": "8px 12px"}},
         )
         st.pydeck_chart(deck, height=640)

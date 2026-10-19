@@ -85,26 +85,58 @@ def select_home(home):
     run_estimate()
 
 
+def note(message, kind="info"):
+    """A short message that stays readable on top of the hero photo."""
+    st.markdown(f'<div class="pp-note {kind}">{message}</div>', unsafe_allow_html=True)
+
+
 def run_search(query):
     query = query.strip()
-    for key in ["result", "home", "matches", "typed_address"]:
+    for key in ["result", "home", "matches", "typed_address", "streets"]:
         st.session_state.pop(key, None)
     if not query:
         st.session_state["lookup"] = None
-        st.warning("Type the home's street address first, for example 2618 Jasper St.")
+        note("Type a street address, like <b>2618 Jasper St</b>, or just a street name, like <b>Jasper St</b>.")
         return
     with st.spinner("Looking up the home…"):
         matches = ins.find_homes(query)
-    if len(matches) == 1:
+        if matches.empty:
+            streets, matches = ins.suggest_homes(query)
+            st.session_state["streets"] = streets
+    st.session_state["typed_address"] = query
+    exact = matches[matches["gap"] == 0] if "gap" in matches else matches.iloc[0:0]
+    if len(exact) == 1:
+        select_home(exact.iloc[0].to_dict())
+    elif st.session_state.get("streets"):
+        st.session_state["lookup"] = "pick"
+        st.session_state["matches"] = matches.to_dict("records")
+    elif len(matches) == 1:
         select_home(matches.iloc[0].to_dict())
     elif len(matches) > 1:
         st.session_state["lookup"] = "units"
         st.session_state["matches"] = matches.to_dict("records")
     else:
-        st.session_state["lookup"] = "notfound"
-        st.session_state["typed_address"] = query
-        for key, value in DETAIL_DEFAULTS.items():
-            st.session_state[key] = value
+        enter_details_myself()
+
+
+def enter_details_myself():
+    st.session_state["lookup"] = "notfound"
+    st.session_state.pop("result", None)
+    for key, value in DETAIL_DEFAULTS.items():
+        st.session_state[key] = value
+
+
+def open_comp(address, zip_code):
+    """Clicking a nearby sale estimates that home instead."""
+    st.session_state["query"] = nice_address(address, zip_code)
+    st.session_state["pending_search"] = True
+    st.session_state["scroll_to_price"] = True
+
+
+def home_label(m):
+    size = f" · {m['total_livable_area']:,.0f} sq ft" if m["total_livable_area"] == m["total_livable_area"] else ""
+    beds = f" · {m['number_of_bedrooms']:.0f} bd" if m["number_of_bedrooms"] == m["number_of_bedrooms"] else ""
+    return f"{nice_address(m['address'])}  ·  {m['zip_code']:.0f}{beds}{size}"
 
 
 def counter_html(start, end, base, pct, zip_code, sales_count):
@@ -121,12 +153,12 @@ def counter_html(start, end, base, pct, zip_code, sales_count):
                      '<div class="track"><div class="dot" id="dot"></div></div>'
                      f'<div class="cap">Higher than <b id="pct">0</b>% of the {sales_count:,} homes sold there since 2024</div>')
     return f"""
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-body {{ margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; }}
+body {{ margin: 0; font-family: 'Public Sans', sans-serif; }}
 .box {{ background: {ui.DEEP}; border-radius: 20px; padding: 22px 26px; color: #fff; }}
 .lbl {{ font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: {ui.GOLD}; }}
-.num {{ font-family: 'DM Serif Display', serif; font-size: 56px; line-height: 1.05; margin: 6px 0 4px; }}
+.num {{ font-family: 'Archivo', sans-serif; font-stretch: 112%; font-weight: 800; letter-spacing: -0.04em; font-size: 54px; line-height: 1.05; margin: 6px 0 4px; }}
 .delta {{ font-weight: 700; font-size: 15px; }}
 .track {{ position: relative; height: 10px; border-radius: 99px; background: linear-gradient(90deg, #A9C0E0, {ui.GOLD}); margin: 14px 0 10px; }}
 .dot {{ position: absolute; top: 50%; left: 0; width: 20px; height: 20px; border-radius: 50%; background: #fff;
@@ -250,18 +282,38 @@ if searched or st.session_state.pop("pending_search", False):
 
 lookup = st.session_state.get("lookup")
 
-if lookup == "units":
+if lookup in ("units", "pick"):
     matches = st.session_state["matches"]
-    ui.section("Which unit?", f"We found {len(matches)} homes at this address. Pick one to see its estimate.")
-    labels = [f"{nice_address(m['address'])} · {m['total_livable_area']:,.0f} sq ft" for m in matches]
-    choice = st.selectbox("Unit", range(len(matches)), format_func=lambda i: labels[i], label_visibility="collapsed")
-    if st.button("Show this home", type="primary"):
-        select_home(matches[choice])
-        lookup = "found"
+    typed = st.session_state.get("typed_address", "")
+    if lookup == "units":
+        ui.section("Which unit?", f"We found {len(matches)} homes at this address. Pick one to see its estimate.")
+    else:
+        streets = st.session_state["streets"]
+        names = " and ".join(string.capwords(s.lower()) for s in streets[:2])
+        exact = sum(m.get("gap") == 0 for m in matches)
+        if exact:
+            intro = f"{exact} homes match that address. "
+        elif typed[:1].isdigit():
+            intro = "We couldn't find that exact house number, so here are the closest ones. "
+        else:
+            intro = f"We found {len(matches):,} homes. "
+        ui.section(f"Homes on {names}", intro
+                   + "Pick one, or type in the box to narrow it down.")
+    with st.container(key="pick_card"):
+        choice = st.selectbox("Home", range(len(matches)), format_func=lambda i: home_label(matches[i]),
+                              label_visibility="collapsed", placeholder="Type a house number…",
+                              index=0 if lookup == "units" or typed[:1].isdigit() else None)
+        b1, b2 = st.columns([1, 2], vertical_alignment="center")
+        if b1.button("Show this home", type="primary", icon=":material/arrow_forward:", disabled=choice is None):
+            select_home(matches[choice])
+            lookup = "found"
+        if lookup == "pick":
+            b2.button("Not on the list? Enter the details myself", type="tertiary", on_click=enter_details_myself)
 
 if lookup == "notfound" and not st.session_state.get("result"):
     ui.section("Tell us about the home",
-               f"We couldn't find {st.session_state['typed_address']} in the city's single-family records. "
+               f"We couldn't find {st.session_state.get('typed_address', 'that address')} in the city's "
+               "single-family records. "
                "It may be a condo building, an apartment, or a small typo. Add a few details and we'll still "
                "estimate it.")
     with st.container(key="details_card"), st.form("manual_form", border=False):
@@ -287,6 +339,9 @@ if result:
         title = nice_address(home["address"], zip_code)
 
     ui.section(title, eyebrow="Your estimate", anchor="price")
+    if st.session_state.pop("scroll_to_price", False):
+        components.html("<script>setTimeout(() => window.parent.document.getElementById('pp-price')"
+                        "?.scrollIntoView({behavior: 'smooth'}), 250);</script>", height=0)
     photo_col, facts_col = st.columns([1.1, 1], gap="large")
     with photo_col:
         st.markdown(f'<div class="pp-hero-pic">{photos.picture_html(location["latitude"], location["longitude"], 250)}</div>',
@@ -395,16 +450,19 @@ if result:
         ui.section("Homes like this that sold nearby",
                    "Recent sales close by with about the same size. A few recorded sales can be transfers "
                    "between family members, so look twice at any price that seems out of line.", anchor="nearby")
-        cards = []
-        for c in comps.itertuples():
-            cards.append(
-                f'<div class="pp-comp">{photos.picture_html(c.lat, c.lon, 140)}'
-                f'<div class="top">Sold {money(c.sale_price)}</div><div class="body">'
-                f'<div class="addr">{nice_address(c.address)}</div>'
-                f'<div class="sub">{c.sale_date:%b %Y} · {c.distance_miles:.2f} mi away</div>'
-                f'<div class="feat">{c.number_of_bedrooms:.0f} bd · {c.number_of_bathrooms:.0f} ba · '
-                f'{c.total_livable_area:,.0f} sq ft · built {c.year_built:.0f}</div></div></div>')
-        st.markdown('<div class="pp-comps">' + "".join(cards) + "</div>", unsafe_allow_html=True)
+        columns = st.columns(len(comps), gap="small")
+        for i, (col, c) in enumerate(zip(columns, comps.itertuples())):
+            with col, st.container(key=f"compcard_{i}"):
+                st.markdown(
+                    f'<div class="pp-comp">{photos.picture_html(c.lat, c.lon, 140)}'
+                    f'<div class="top">Sold {money(c.sale_price)}</div><div class="body">'
+                    f'<div class="addr">{nice_address(c.address)}</div>'
+                    f'<div class="sub">{c.sale_date:%b %Y} · {c.distance_miles:.2f} mi away</div>'
+                    f'<div class="feat">{c.number_of_bedrooms:.0f} bd · {c.number_of_bathrooms:.0f} ba · '
+                    f'{c.total_livable_area:,.0f} sq ft · built {c.year_built:.0f}</div>'
+                    f'<div class="go">Estimate this home →</div></div></div>', unsafe_allow_html=True)
+                st.button(f"Estimate {nice_address(c.address)}", key=f"comp_open_{i}", on_click=open_comp,
+                          args=(c.address, int(c.zip_code) if c.zip_code == c.zip_code else None))
         st.page_link("app_pages/find_homes.py", label="Browse more sold homes", icon=":material/arrow_forward:")
 
     ui.section("The neighborhood", ins.tract_label(location["GEOID"]), anchor="area")

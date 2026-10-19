@@ -29,11 +29,14 @@ PHOTO_CREDIT = ('Cover photo by <a href="https://unsplash.com/@bryanangelo?utm_s
 
 CSS = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Public+Sans:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block');
 
-html, body, [class*="st-"], .stMarkdown, button, input, select, textarea {{ font-family: 'Plus Jakarta Sans', sans-serif; }}
-.material-symbols-rounded, [data-testid="stIconMaterial"] {{ font-family: 'Material Symbols Rounded' !important; }}
+html, body, [class*="st-"], .stMarkdown, button, input, select, textarea {{ font-family: 'Public Sans', sans-serif; }}
+h1, h2, h3, h4, .pp-section-title, .pp-big, .pp-band h2, .pp-callout .t, .pp-step .h, .pp-footer .logo,
+.st-key-nav_logo [data-testid="stPageLink"] a p {{ font-family: 'Archivo', sans-serif !important; font-stretch: 108%; }}
+.material-symbols-rounded, [data-testid="stIconMaterial"], [data-testid="stAlertDynamicIcon"],
+[data-testid="stAlertDynamicIcon"] * {{ font-family: 'Material Symbols Rounded' !important; }}
 
 /* Streamlit chrome off: this is a website, not a notebook */
 [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSidebarCollapsedControl"],
@@ -72,8 +75,8 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     text-align: center; padding: 90px 24px 160px;
 }}
-.pp-hero h1 {{ color: #fff; font-family: 'DM Serif Display', serif; font-weight: 400; font-size: clamp(2.6rem, 6.4vw, 5rem);
-              line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 16px; max-width: 1000px;
+.pp-hero h1 {{ color: #fff; font-family: 'Archivo', sans-serif; font-stretch: 112%; font-weight: 800; font-size: clamp(2.4rem, 6vw, 4.6rem);
+              line-height: 1.04; letter-spacing: -0.035em; margin: 0 0 16px; max-width: 1000px;
               animation: ppRise 0.9s cubic-bezier(.2,.7,.2,1) both; }}
 .pp-hero p {{ animation: ppRise 0.9s 0.15s cubic-bezier(.2,.7,.2,1) both; }}
 .pp-hero h1 em {{ font-style: normal; color: {GOLD}; }}
@@ -82,14 +85,14 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-hero.pp-compact h1 {{ font-size: clamp(2rem, 4.5vw, 3.3rem); }}
 
 /* Address search inside the home hero */
-.pp-hero.pp-home {{ min-height: 560px; padding: 70px 24px 220px; }}
-.pp-hero.pp-home h1 {{ font-size: clamp(2.4rem, 5.6vw, 4.4rem); }}
+.pp-hero.pp-home {{ min-height: 500px; padding: 70px 24px 160px; }}
+.pp-hero.pp-home h1 {{ font-size: clamp(2.2rem, 5.2vw, 4.1rem); }}
 .st-key-search_card {{
     background: #fff; border-radius: 999px; padding: 8px 8px 8px 22px; border: none;
     box-shadow: 0 22px 60px rgba(8,12,20,0.35); max-width: 800px; width: 100%; margin: 0 auto;
     position: relative; z-index: 5; flex: 0 1 auto !important; height: fit-content !important; align-self: flex-start;
 }}
-[data-testid="stLayoutWrapper"]:has(> .st-key-search_card) {{ margin-top: -214px; position: relative; z-index: 5; }}
+[data-testid="stLayoutWrapper"]:has(> .st-key-search_card) {{ margin-top: -154px; position: relative; z-index: 5; }}
 .st-key-search_card [data-testid="stForm"] {{ border: none; padding: 0; }}
 .st-key-search_card [data-testid="stTextInput"] div[data-baseweb="input"],
 .st-key-search_card [data-testid="stTextInput"] div[data-baseweb="base-input"] {{ border: none !important; background: transparent !important; }}
@@ -127,7 +130,7 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-pcard.coral {{ background: {GOLD_TINT}; border-color: {GOLD_LINE}; }}
 .pp-label {{ color: {MUTED}; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }}
 .pp-label.coral {{ color: {GOLD_TEXT}; }}
-.pp-big {{ color: {INK}; font-size: clamp(1.9rem, 3.6vw, 2.7rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-top: 4px; }}
+.pp-big {{ color: {INK}; font-size: clamp(1.9rem, 3.6vw, 2.7rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.15; margin-top: 4px; }}
 .pp-big.coral {{ color: {BLUE}; }}
 .pp-arrow {{ color: {MUTED}; font-size: 1.6rem; }}
 .pp-callout {{ background: {GOLD_TINT}; border: 1.5px solid {GOLD_LINE}; border-radius: 18px; padding: 18px 24px; margin-top: 14px; }}
@@ -183,9 +186,9 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-stat div {{ margin: 0; }}
 .pp-stat .v {{ font-size: 1.3rem; font-weight: 800; color: {INK}; }}
 .pp-stat .l {{ font-size: 0.83rem; color: {MUTED}; }}
-.pp-section-title {{ font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 800; color: {INK}; margin: 40px 0 4px; letter-spacing: -0.025em; }}
+.pp-section-title {{ font-size: clamp(1.45rem, 2.7vw, 2rem); font-weight: 800; color: {INK}; margin: 40px 0 6px; letter-spacing: -0.035em; line-height: 1.15; }}
 .pp-section-sub {{ color: {MUTED}; margin: 0 0 16px; font-size: 1rem; }}
-.pp-eyebrow {{ color: {GOLD_TEXT}; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.8rem; margin-top: 40px; }}
+.pp-eyebrow {{ color: {GOLD_TEXT}; font-weight: 700; font-size: 0.95rem; margin-top: 40px; }}
 
 .pp-band {{ width: 100vw; margin-left: calc(50% - 50vw); background: {DEEP}; padding: 64px 24px; margin-top: 56px; }}
 .pp-band h2 {{ color: #fff; text-align: center; font-size: clamp(1.7rem, 3.6vw, 2.8rem); font-weight: 800; margin: 0 auto 34px; max-width: 900px; }}
@@ -211,11 +214,9 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-step p {{ margin: 0; color: {MUTED}; }}
 
 .pp-check {{ list-style: none; padding: 0; margin: 0; }}
-.pp-check li {{ padding: 6px 0 6px 32px; position: relative; color: {INK}; }}
-.pp-check li::before {{
-    content: "✓"; position: absolute; left: 0; top: 6px; width: 22px; height: 22px; border-radius: 50%;
-    background: {GOLD}; color: {INK}; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
-}}
+.pp-check li {{ padding: 8px 0 8px 24px; position: relative; color: {INK}; line-height: 1.6; border-bottom: 1px solid {LINE}; }}
+.pp-check li:last-child {{ border-bottom: none; }}
+.pp-check li::before {{ content: ""; position: absolute; left: 2px; top: 19px; width: 10px; height: 3px; background: {GOLD}; }}
 
 [data-testid="stExpander"] details {{ border-radius: 14px; border-color: {LINE}; }}
 [data-testid="stExpander"] summary p {{ font-weight: 700; font-size: 1.02rem; }}
@@ -252,25 +253,55 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 
 /* Intro screen */
 .st-key-splash {{
-    position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; gap: 0 !important; text-align: center;
-    background: linear-gradient(rgba(10,24,48,0.55), rgba(10,24,48,0.78)), url('{HERO_PHOTO}') center/cover;
+    position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; align-items: flex-start;
+    justify-content: center; gap: 0 !important; text-align: left; padding: 0 max(28px, 8vw);
+    background: linear-gradient(90deg, rgba(10,24,48,0.92) 0%, rgba(10,24,48,0.70) 45%, rgba(10,24,48,0.25) 100%),
+                url('{HERO_PHOTO}') center/cover;
     animation: ppFade 0.8s both;
 }}
-.st-key-splash [data-testid="stElementContainer"] {{ width: auto !important; display: flex; justify-content: center; }}
-.pp-splash-kicker {{ color: {GOLD}; letter-spacing: 0.32em; font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
-                    animation: ppRise .9s .1s both; }}
-.pp-splash-title {{ font-family: 'DM Serif Display', serif; color: #fff; font-size: clamp(3.6rem, 12vw, 9rem); line-height: 1;
-                   margin: 10px 0 6px; animation: ppRise 1s .2s both; }}
-.pp-splash-sub {{ color: rgba(255,255,255,0.9); letter-spacing: 0.22em; text-transform: uppercase; font-size: 0.9rem;
+.st-key-splash [data-testid="stElementContainer"] {{ width: auto !important; display: flex; justify-content: flex-start; }}
+.pp-splash-mark {{ display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; font-size: 1rem;
+                  margin-bottom: 26px; animation: ppRise .9s .1s both; }}
+.pp-splash-mark .bar {{ width: 34px; height: 4px; background: {GOLD}; border-radius: 2px; }}
+.pp-splash-title {{ font-family: 'Archivo', sans-serif; font-stretch: 115%; font-weight: 900; color: #fff;
+                   font-size: clamp(3.4rem, 10.5vw, 8.4rem); line-height: 1.08; letter-spacing: -0.045em;
+                   margin: 0 0 22px; padding-bottom: 0.06em; animation: ppRise 1s .2s both; }}
+.pp-splash-title span {{ color: {GOLD}; }}
+.pp-splash-sub {{ color: rgba(255,255,255,0.88); font-size: clamp(1.05rem, 1.6vw, 1.3rem); line-height: 1.55; max-width: 540px;
                  margin-bottom: 34px; animation: ppRise 1s .35s both; }}
-.st-key-splash .stButton button {{ background: rgba(255,255,255,0.95); color: {BLUE}; border: none; border-radius: 999px;
-    padding: 0.85rem 2.8rem; font-weight: 800; letter-spacing: 0.18em; font-size: 1.05rem; animation: ppRise 1s .5s both;
+.st-key-splash .stButton button {{ background: {GOLD}; color: {INK}; border: none; border-radius: 999px;
+    padding: 0.85rem 2.2rem; font-weight: 800; font-size: 1.08rem; animation: ppRise 1s .5s both;
     box-shadow: 0 12px 34px rgba(0,0,0,0.3); transition: transform .2s ease, background .2s ease; }}
-.st-key-splash .stButton button:hover {{ background: {GOLD}; color: {INK}; transform: scale(1.05); }}
+.st-key-splash .stButton button:hover {{ background: #fff; color: {BLUE}; transform: translateX(4px); }}
 .st-key-splash .stButton button p {{ color: inherit; font-weight: 800; }}
-.pp-splash-foot {{ position: fixed; bottom: 26px; left: 0; right: 0; color: rgba(255,255,255,0.75); font-size: 0.85rem;
-                  letter-spacing: 0.08em; animation: ppFade 1.2s .8s both; }}
+.pp-splash-foot {{ position: fixed; bottom: 26px; left: max(28px, 8vw); right: 28px; color: rgba(255,255,255,0.7);
+                  font-size: 0.88rem; animation: ppFade 1.2s .8s both; }}
+
+/* Notes and clickable cards */
+.pp-note {{ max-width: 800px; margin: 10px auto 0; padding: 12px 18px; border-radius: 14px; background: #fff; color: {INK};
+           border-left: 5px solid {GOLD}; box-shadow: 0 10px 30px rgba(8,12,20,0.18); position: relative; z-index: 5; }}
+.st-key-pick_card {{ background: #fff; border: 1px solid {LINE}; border-radius: 18px; padding: 18px 22px;
+                    box-shadow: 0 10px 30px rgba(14,31,61,0.07); }}
+[class*="st-key-compcard_"] {{ position: relative; height: 100%; }}
+[class*="st-key-compcard_"] [data-testid="stElementContainer"]:has(.stButton) {{ position: absolute; inset: 0; z-index: 4; margin: 0; }}
+[class*="st-key-compcard_"] .stButton, [class*="st-key-compcard_"] .stButton button {{ width: 100%; height: 100%; }}
+[class*="st-key-compcard_"] .stButton button {{ opacity: 0; cursor: pointer; }}
+[class*="st-key-compcard_"]:hover .pp-comp {{ transform: translateY(-5px); box-shadow: 0 16px 34px rgba(14,31,61,0.16); border-color: {GOLD}; }}
+[class*="st-key-compcard_"]:hover .pp-pic img {{ transform: scale(1.06); }}
+.pp-comp {{ height: 100%; }}
+.pp-comp .go {{ margin-top: 10px; color: {BLUE}; font-weight: 700; font-size: 0.9rem; }}
+
+/* Audience cards and notes (About) */
+.pp-cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }}
+.pp-cards .c {{ background: #fff; border: 1px solid {LINE}; border-radius: 16px; padding: 22px; }}
+.pp-cards .c .material-symbols-rounded {{ color: {BLUE}; font-size: 30px; }}
+.pp-cards .c h4 {{ margin: 10px 0 6px; font-family: 'Archivo', sans-serif; font-stretch: 108%; font-size: 1.15rem; }}
+.pp-cards .c p {{ margin: 0; color: {MUTED}; line-height: 1.6; }}
+.pp-notes {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0; background: {PAPER};
+            border-radius: 16px; }}
+.pp-notes div {{ padding: 18px 22px; color: {INK}; line-height: 1.6; border-left: 1px solid {LINE}; }}
+.pp-notes div:first-child {{ border-left: none; }}
+.pp-notes b {{ display: block; margin-bottom: 4px; }}
 
 /* What-if */
 .st-key-whatif {{ background: #fff; border: 1px solid {LINE}; border-radius: 22px; padding: 22px 26px;
@@ -312,14 +343,15 @@ def section(title, subtitle=None, eyebrow=None, anchor=None):
     st.markdown(f'{eyebrow_html}<div class="pp-section-title"{top}>{title}</div>{sub}', unsafe_allow_html=True)
 
 
-def splash(home_count):
+def splash(home_count, sale_count, last_sale):
     """Full-screen intro shown once per visit, in the spirit of a product launch page."""
     with st.container(key="splash"):
-        st.markdown(f'<div class="pp-splash-kicker">Philadelphia home prices</div>'
-                    f'<div class="pp-splash-title">{APP_NAME}</div>'
-                    f'<div class="pp-splash-sub">Know what any Philly home is worth</div>', unsafe_allow_html=True)
-        started = st.button("START", key="start_button")
-        st.markdown(f'<div class="pp-splash-foot">Free · No sign-up · {home_count:,} homes · Built on public city records</div>',
+        st.markdown('<div class="pp-splash-mark"><span class="bar"></span>Philadelphia, PA</div>'
+                    '<div class="pp-splash-title">Philly<span>Price</span></div>'
+                    '<div class="pp-splash-sub">Know what any Philadelphia home is worth, from the city\'s own '
+                    'sales records. Free, and no sign-up.</div>', unsafe_allow_html=True)
+        started = st.button("Get started  →", key="start_button")
+        st.markdown(f'<div class="pp-splash-foot">{home_count:,} homes · {sale_count:,} recorded sales · Sales through {last_sale:%B %Y}</div>',
                     unsafe_allow_html=True)
     return started
 
@@ -358,6 +390,19 @@ def steps(items):
         for i, (title, text) in enumerate(items, start=1)
     )
     st.markdown(f'<div class="pp-steps">{html}</div>', unsafe_allow_html=True)
+
+
+def cards(items):
+    """Equal-height cards: (icon, title, text)."""
+    st.markdown('<div class="pp-cards">' + "".join(
+        f'<div class="c"><span class="material-symbols-rounded">{i}</span><h4>{t}</h4><p>{x}</p></div>'
+        for i, t, x in items) + "</div>", unsafe_allow_html=True)
+
+
+def notes(items):
+    """A single strip of short (title, text) notes side by side."""
+    st.markdown('<div class="pp-notes">' + "".join(f"<div><b>{t}</b>{x}</div>" for t, x in items) + "</div>",
+                unsafe_allow_html=True)
 
 
 def checklist(items):

@@ -21,12 +21,6 @@ list price, a likely range, the reasons behind the price, and similar homes that
 It's built to support an agent's judgment, not replace it. Things like a new kitchen, the layout, or
 how quiet the street is still need a person who has seen the home.
 """)
-    ui.section("Who it's for")
-    ui.checklist([
-        "Real estate agents and brokers setting a list price or preparing for a conversation with a seller",
-        "Home buyers checking whether an asking price is in a reasonable range",
-        "Homeowners curious what their home might list for today",
-    ])
 with right:
     ui.section("By the numbers")
     facts = [
@@ -41,10 +35,19 @@ with right:
         for col, (value, label) in zip(cols, row):
             col.markdown(f'<div class="pp-stat" style="margin-bottom:12px"><div class="v">{value}</div>'
                          f'<div class="l">{label}</div></div>', unsafe_allow_html=True)
-    ui.section("Good to know")
-    ui.checklist([
-        "Estimates are a starting point for a pricing conversation, not an appraisal.",
-        "Only single-family homes in Philadelphia are covered.",
-        "See How it works for the data sources, accuracy, and limits of the model.",
-    ])
+
+ui.section("Who it's for")
+ui.cards([
+    ("real_estate_agent", "Agents and brokers",
+     "Set a list price and walk into the seller conversation with recent sales to back it up."),
+    ("key", "Home buyers", "Check whether an asking price is in a reasonable range before you make an offer."),
+    ("cottage", "Homeowners", "See what your home might list for today, and what a renovation could add."),
+])
+
+ui.section("Good to know")
+ui.notes([
+    ("Not an appraisal", "An estimate is a starting point for a pricing conversation."),
+    ("Single-family homes only", "Rowhomes, twins, and detached homes in Philadelphia. No condos or multi-family."),
+    ("Where the numbers come from", "See How it works for the data sources, accuracy, and limits."),
+])
 ui.footer()

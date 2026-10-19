@@ -20,7 +20,8 @@ current = st.navigation([estimate, find_homes, market_map, price_trends, how_it_
 # Intro screen the first time a visitor lands on the home page.
 if not st.session_state.get("entered") and current.title == "Estimate":
     from core import insights as ins
-    if ui.splash(len(ins.load_homes())):
+    sales = ins.load_sales()
+    if ui.splash(len(ins.load_homes()), len(sales), sales["sale_date"].max()):
         st.session_state["entered"] = True
         st.rerun()
     st.stop()

@@ -171,6 +171,46 @@ def find_homes(address):
     return load_homes().iloc[rows].sort_values("address").reset_index(drop=True)
 
 
+HOUSE_NUMBER = r"^(\d+)[A-Z]?(?:-\d+)?\s+"
+
+
+@lru_cache(maxsize=1)
+def _street_index():
+    """Street name ('JASPER ST') -> row positions, and the house number of every home."""
+    homes = load_homes()
+    names = homes["street"].str.replace(HOUSE_NUMBER, "", regex=True)
+    numbers = pd.to_numeric(homes["street"].str.extract(HOUSE_NUMBER)[0], errors="coerce")
+    return names.groupby(names).indices, numbers.to_numpy(), names.to_numpy()
+
+
+def suggest_homes(text, limit=1500):
+    """Homes for a partial search like 'Jasper St', 'jasper', or '2618 Jaspr St'.
+    Returns (street names matched, homes), nearest house numbers first when a number was typed."""
+    import difflib
+
+    key = opa_address(text).split(" #")[0]
+    number = re.match(HOUSE_NUMBER, key + " ")
+    name = re.sub(HOUSE_NUMBER, "", key + " ").strip()
+    if not name:
+        return [], load_homes().iloc[0:0]
+    streets, numbers, names = _street_index()
+    padded = f" {name} "
+    found = [s for s in streets if s == name]
+    found = found or [s for s in streets if s.startswith(name + " ") or f" {s} ".find(padded) >= 0]
+    found = found or difflib.get_close_matches(name, list(streets), n=4, cutoff=0.8)
+    if not found:
+        return [], load_homes().iloc[0:0]
+    rows = np.concatenate([streets[s] for s in found])
+    homes = load_homes().iloc[rows].copy()
+    homes["house_number"], homes["street_name"] = numbers[rows], names[rows]
+    if number:
+        homes["gap"] = (homes["house_number"] - int(number.group(1))).abs()
+        homes = homes.sort_values(["gap", "address"])
+    else:
+        homes = homes.sort_values(["street_name", "house_number", "address"])
+    return found, homes.head(limit).reset_index(drop=True)
+
+
 def home_details(home):
     """The home's details from the city's records, with sensible fill-ins where a record is blank or zero."""
     def pick(value, low, high, fallback):

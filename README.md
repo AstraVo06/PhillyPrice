@@ -14,11 +14,6 @@ The site fills in the home's details from the city's property records (or the vi
 
 **Live website:** https://phillyprice.streamlit.app
 
-## Course project
-
-BUSA 310 Business Analytics III, DePauw University. Group Project 1: Real Estate Price Prediction Tool.
-
-**Team:** _add names here_
 
 **Scenario.** A regional real estate brokerage wants a tool that helps its agents price homes for sale. A realtor
 enters a home's features and the tool suggests the price it should list at.

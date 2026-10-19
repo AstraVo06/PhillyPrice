@@ -468,7 +468,8 @@ def footer():
       <p><a href="/" target="_self">Get an estimate</a><br><a href="/find_homes" target="_self">Find homes</a><br>
       <a href="/market_map" target="_self">Market map</a><br>
       <a href="/price_trends" target="_self">Price trends</a><br><a href="/how_it_works" target="_self">How it works</a><br>
-      <a href="/about" target="_self">About</a></p></div>
+      <a href="/about" target="_self">About</a><br><a href="/privacy" target="_self">Privacy</a> ·
+      <a href="/terms" target="_self">Terms</a></p></div>
     <div><p><b style="color:#fff">Data</b></p>
       <p><a href="https://opendataphilly.org/datasets/philadelphia-properties-and-assessment-history/" target="_blank">OpenDataPhilly property sales</a><br>
       <a href="https://data.census.gov/" target="_blank">U.S. Census Bureau ACS 2024</a><br>

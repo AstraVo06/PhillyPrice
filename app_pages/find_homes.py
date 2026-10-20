@@ -32,10 +32,10 @@ with filters:
         low_price, high_price = st.select_slider("Sale price", PRICE_STEPS, value=(PRICE_STEPS[0], PRICE_STEPS[-1]),
                                                  format_func=money_short, label_visibility="collapsed")
         st.markdown("**Bedrooms**")
-        beds = st.segmented_control("Bedrooms", ["Any", "1+", "2+", "3+", "4+", "5+"], default="Any",
+        beds = st.segmented_control("Bedrooms", ["Any", "1+", "2+", "3+", "4+", "5+"], default="Any", required=True,
                                     label_visibility="collapsed") or "Any"
         st.markdown("**Bathrooms**")
-        baths = st.segmented_control("Bathrooms", ["Any", "1+", "2+", "3+"], default="Any",
+        baths = st.segmented_control("Bathrooms", ["Any", "1+", "2+", "3+"], default="Any", required=True,
                                      label_visibility="collapsed") or "Any"
         st.markdown("**Size (sq ft)**")
         low_size, high_size = st.select_slider("Size", SIZE_STEPS, value=(SIZE_STEPS[0], SIZE_STEPS[-1]),

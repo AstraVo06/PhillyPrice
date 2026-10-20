@@ -23,7 +23,7 @@ ui.hero("Market map", "See which Philadelphia neighborhoods cost the most, and h
 panel, map_col = st.columns([1, 2.7], gap="medium")
 with panel:
     with st.container(border=True):
-        view = st.segmented_control("Map view", ["Flat map", "3D city"], default="Flat map",
+        view = st.segmented_control("Map view", ["Flat map", "3D city"], default="Flat map", required=True,
                                     label_visibility="collapsed") or "Flat map"
         st.markdown("**Show on the map**")
         metric = st.radio("Show on the map", list(ins.SALES_METRICS) + list(CENSUS_METRICS),

@@ -349,9 +349,9 @@ def details_inputs():
     """The beginner-friendly detail fields, bound to session state keys."""
     this_year = datetime.date.today().year
     c1, c2 = st.columns(2)
-    c1.segmented_control("Bedrooms", options=[1, 2, 3, 4, 5, 6], key="beds",
+    c1.segmented_control("Bedrooms", options=[1, 2, 3, 4, 5, 6], key="beds", required=True,
                          format_func=lambda n: "6+" if n == 6 else str(n))
-    c2.segmented_control("Bathrooms", options=[1, 2, 3, 4], key="baths",
+    c2.segmented_control("Bathrooms", options=[1, 2, 3, 4], key="baths", required=True,
                          format_func=lambda n: "4+" if n == 4 else str(n))
     c3, c4 = st.columns(2)
     c3.number_input("Living area (square feet)", min_value=300, max_value=10000, step=50, key="sqft",
@@ -644,9 +644,9 @@ if not result and lookup not in ("units", "pick", "notfound"):
                                   placeholder="Type or pick a neighborhood, like Fishtown", key="bd_hood")
         size_col.number_input("Living area (square feet)", 300, 10000, 1200, step=50, key="bd_sqft")
         c1, c2, c3 = st.columns([1, 1, 1])
-        c1.segmented_control("Bedrooms", [1, 2, 3, 4, 5, 6], default=3, key="bd_beds",
+        c1.segmented_control("Bedrooms", [1, 2, 3, 4, 5, 6], default=3, key="bd_beds", required=True,
                              format_func=lambda n: "6+" if n == 6 else str(n))
-        c2.segmented_control("Bathrooms", [1, 2, 3, 4], default=1, key="bd_baths",
+        c2.segmented_control("Bathrooms", [1, 2, 3, 4], default=1, key="bd_baths", required=True,
                              format_func=lambda n: "4+" if n == 4 else str(n))
         c3.number_input("Year built", 1750, datetime.date.today().year, 1925, key="bd_year")
         st.select_slider("Condition inside the home", options=list(CONDITION_CHOICES), value=4, key="bd_condition",

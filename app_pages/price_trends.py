@@ -11,7 +11,7 @@ ui.hero("Price trends", "See how Philadelphia home prices changed since 2019, an
 LINE_COLORS = [ui.BLUE, "#E3A21A", "#2A9D8F", "#8E5BB5", ui.RED]
 MORTGAGE = "30-year mortgage rate"
 
-metric = st.pills("Show", list(ins.SALES_METRICS) + [MORTGAGE], default="Typical sale price",
+metric = st.pills("Show", list(ins.SALES_METRICS) + [MORTGAGE], default="Typical sale price", required=True,
                   selection_mode="single", label_visibility="collapsed") or "Typical sale price"
 
 if metric == MORTGAGE:

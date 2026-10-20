@@ -36,7 +36,8 @@ html, body, [class*="st-"], .stMarkdown, button, input, select, textarea {{ font
 h1, h2, h3, h4, .pp-section-title, .pp-big, .pp-band h2, .pp-callout .t, .pp-step .h, .pp-footer .logo,
 .st-key-nav_logo [data-testid="stPageLink"] a p {{ font-family: 'Archivo', sans-serif !important; font-stretch: 108%; }}
 .material-symbols-rounded, [data-testid="stIconMaterial"], [data-testid="stAlertDynamicIcon"],
-[data-testid="stAlertDynamicIcon"] * {{ font-family: 'Material Symbols Rounded' !important; }}
+[data-testid="stAlertDynamicIcon"] *, [data-testid="stToastDynamicIcon"], [data-testid="stToastDynamicIcon"] * {{
+    font-family: 'Material Symbols Rounded' !important; }}
 
 /* Streamlit chrome off: this is a website, not a notebook */
 [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSidebarCollapsedControl"],

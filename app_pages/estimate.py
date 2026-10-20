@@ -193,8 +193,12 @@ def save_button(result, home, title, d):
         st.toast("Saved homes are unavailable right now. Try again in a minute.", icon=":material/cloud_off:")
         return
     if already:
-        if st.button("Saved to your homes", icon=":material/favorite:", width="stretch", key="unsave_home",
-                     help="Click to remove it from your saved homes"):
+        # Saved: open the saved list from here, and keep removing as its own small button so a
+        # second click on "Save" can't quietly undo the save.
+        go, drop = st.columns([3, 1.2], gap="small")
+        if go.button("Saved · View my homes", icon=":material/favorite:", width="stretch", key="go_saved"):
+            st.switch_page("app_pages/saved.py")
+        if drop.button("Remove", width="stretch", key="unsave_home", help="Remove it from your saved homes"):
             account.remove_home(record["home_key"])
             st.rerun()
     elif st.button("Save this home", icon=":material/favorite_border:", width="stretch", key="save_home"):

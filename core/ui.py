@@ -98,8 +98,9 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 .pp-hero.pp-compact h1 {{ font-size: clamp(2rem, 4.5vw, 3.3rem); }}
 
 /* Address search inside the home hero */
-.pp-hero.pp-home {{ min-height: 520px; padding: 70px 24px 186px; }}
+.pp-hero.pp-home {{ min-height: 540px; padding: 70px 24px 220px; }}
 .pp-hero.pp-home h1 {{ font-size: clamp(2.2rem, 5.2vw, 4.1rem); }}
+.pp-hero.pp-home p {{ font-size: clamp(1rem, 1.6vw, 1.13rem); max-width: 680px; line-height: 1.55; }}
 .st-key-search_card {{
     background: #fff; border-radius: 999px; padding: 8px 8px 8px 22px; border: none;
     box-shadow: 0 22px 60px rgba(8,12,20,0.35); max-width: 800px; width: 100%; margin: 0 auto;

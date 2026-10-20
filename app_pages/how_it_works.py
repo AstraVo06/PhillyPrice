@@ -13,7 +13,8 @@ ui.steps([
      "exact spot on the map. From there we add the neighborhood's typical income, rent, and how many homes are "
      "owner-occupied, plus the distance to City Hall."),
     ("We add today's market",
-     "This month's 30-year mortgage rate is added automatically, because rates affect what buyers can pay."),
+     "This month's 30-year mortgage rate and the year are added automatically, because rates and the "
+     "market in a given year affect what buyers pay."),
     ("The model sets a price",
      "A machine-learning model (a random forest of 100 decision trees) learned from 107,321 Philadelphia "
      "single-family sales from 2019 to 2026 how these details relate to the price."),
@@ -48,7 +49,9 @@ with st.expander("What does the realistic price range mean?"):
             previous = top
         table = "| Estimate | Low end | High end |\n|---|---|---|\n" + "\n".join(rows)
         st.markdown(table.replace("$", "\\$"))
-        st.caption("For example, a \\$300K estimate has a likely range of about \\$154K to \\$381K.")
+        low, high = ins.price_range(None, 300_000)
+        st.caption(f"For example, a $300K estimate has a likely range of about {money_short(low)} to "
+                   f"{money_short(high)}.".replace("$", "\\$"))
     elif ins.RANGE_METHOD == "typical_error":
         st.markdown(f"It's the suggested price plus or minus **{money(ins.TYPICAL_ERROR)}**, the model's average "
                     "miss on recent sales. A home rarely sells for exactly one number, so the range is a better "

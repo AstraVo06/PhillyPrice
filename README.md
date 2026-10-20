@@ -30,9 +30,9 @@ enters a home's features and the tool suggests the price it should list at.
 
 | Model | Random split R² | Random split MAE | Time-based R² | Time-based MAE |
 |---|---|---|---|---|
-| Linear regression | 0.386 | $110,936 | 0.323 | $135,692 |
-| Random forest | 0.656 | $76,421 | 0.392 | $104,939 |
-| Tuned random forest (deployed) | 0.656 | $77,290 | 0.411 | $104,456 |
+| Linear regression | 0.387 | $112,022 | 0.327 | $128,027 |
+| Random forest | 0.657 | $75,952 | 0.399 | $101,763 |
+| Tuned random forest (deployed) | 0.657 | $77,163 | 0.413 | $99,888 |
 
 The time-based test trains on 2019–2024 sales and predicts 2025–2026 sales. The deployed model is the tuned
 random forest refit on all 107,321 sales.

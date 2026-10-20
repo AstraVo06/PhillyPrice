@@ -22,7 +22,7 @@ DATA_DIR = os.path.join(REPO, "data")
 
 # Mean absolute error of the tuned Random Forest on 2025-2026 sales
 # (notebook: "Tuned Random Forest - Time-Based Validation").
-TYPICAL_ERROR = 104_456
+TYPICAL_ERROR = 99_888
 
 # How the likely price range is built:
 #   "price_band"    -> 8 in 10 range for the home's price level (RANGE_BANDS below)
@@ -34,11 +34,11 @@ RANGE_METHOD = "price_band"
 # 8 in 10 of the 2025-2026 sales, priced by a copy of the tuned model trained on 2019-2024 only,
 # sold between estimate x low and estimate x high. Recompute with scripts/check_price_range.py.
 RANGE_BANDS = [
-    (150_000, 0.309, 1.450),
-    (250_000, 0.422, 1.313),
-    (400_000, 0.514, 1.271),
-    (700_000, 0.633, 1.300),
-    (float("inf"), 0.725, 1.435),
+    (150_000, 0.313, 1.487),
+    (250_000, 0.448, 1.335),
+    (400_000, 0.598, 1.287),
+    (700_000, 0.755, 1.313),
+    (float("inf"), 0.762, 1.446),
 ]
 
 # Lowest sale price kept in the training data.
@@ -55,7 +55,7 @@ CONDITION_LABELS = {
     7: "Uninhabitable",
 }
 
-TIMING_FEATURES = ["mortgage_rate", "sale_year", "sale_month"]
+TIMING_FEATURES = ["mortgage_rate", "sale_year", "sale_month", "sale_year_fe"]
 
 
 # --------------------------------------------------
@@ -325,6 +325,7 @@ def build_features(location, living_area, bedrooms, bathrooms, interior_conditio
         "distance_city_hall_miles": location["distance_city_hall_miles"],
         "sale_year": prediction_date.year,
         "sale_month": prediction_date.month,
+        "sale_year_fe": str(prediction_date.year),
     }])
     return row[mb.MODEL_FEATURES]
 
@@ -419,7 +420,8 @@ def _original_feature(name):
     kind, column = name.split("__", 1)
     if kind == "num":
         return column
-    for feature in mb.MODEL_FEATURES:
+    # Longest match first, so sale_year_fe_2024 maps to sale_year_fe and not sale_year.
+    for feature in sorted(mb.MODEL_FEATURES, key=len, reverse=True):
         if column.startswith(feature + "_"):
             return feature
     return column
@@ -595,7 +597,7 @@ DRIVER_GROUPS = {
     "Location": ["distance_city_hall_miles", "zip_code", "median_household_income", "median_gross_rent",
                  "owner_occupied_pct"],
     "Size (living area)": ["total_livable_area"],
-    "Market timing": ["mortgage_rate", "sale_month", "sale_year"],
+    "Market timing": ["mortgage_rate", "sale_month", "sale_year", "sale_year_fe"],
     "Age of the home": ["house_age"],
     "Bathrooms": ["number_of_bathrooms"],
     "Condition inside": ["interior_condition"],
@@ -605,7 +607,8 @@ DRIVER_NAMES = {
     "total_livable_area": "Living area", "distance_city_hall_miles": "Distance from City Hall",
     "zip_code": "ZIP code", "median_household_income": "Neighborhood income", "mortgage_rate": "Mortgage rate",
     "sale_month": "Month of sale", "house_age": "Age of the home", "median_gross_rent": "Neighborhood rent",
-    "number_of_bathrooms": "Bathrooms", "sale_year": "Year of sale", "interior_condition": "Condition inside",
+    "number_of_bathrooms": "Bathrooms", "sale_year": "Year of sale (trend)",
+    "sale_year_fe": "Year of sale (fixed effect)", "interior_condition": "Condition inside",
     "owner_occupied_pct": "Share of owners in the area", "number_of_bedrooms": "Bedrooms",
 }
 

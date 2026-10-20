@@ -23,7 +23,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BAND_TOPS = [150_000, 250_000, 400_000, 700_000, float("inf")]
 FEATURES = ["total_livable_area", "number_of_bedrooms", "number_of_bathrooms", "interior_condition", "house_age",
             "zip_code", "median_household_income", "median_gross_rent", "owner_occupied_pct", "mortgage_rate",
-            "distance_city_hall_miles", "sale_year", "sale_month"]
+            "distance_city_hall_miles", "sale_year", "sale_month", "sale_year_fe"]
 
 sales = pd.read_csv(os.path.join(REPO, "data", "recent_sales.csv.gz"), parse_dates=["sale_date"], dtype={"GEOID": str})
 tracts = pd.read_csv(os.path.join(REPO, "model", "philadelphia_census_tract_lookup_complete.csv"), dtype={"GEOID": str})
@@ -35,6 +35,7 @@ df["period"] = df["sale_date"].dt.to_period("M")
 df = df.merge(rates, on="period")
 df["sale_year"], df["sale_month"] = df["sale_date"].dt.year, df["sale_date"].dt.month
 df["house_age"] = df["sale_year"] - df["year_built"]
+df["sale_year_fe"] = df["sale_year"].astype(str)
 
 train, test = df[df["sale_year"] <= 2024], df[df["sale_year"] >= 2025].copy()
 model = clone(joblib.load(os.path.join(REPO, "model", "philadelphia_house_price_model_compressed.joblib")))

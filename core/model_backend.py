@@ -59,7 +59,8 @@ MODEL_FEATURES = [
     "mortgage_rate",
     "distance_city_hall_miles",
     "sale_year",
-    "sale_month"
+    "sale_month",
+    "sale_year_fe"
 ]
 
 
@@ -274,7 +275,10 @@ def predict_house_price(
             sale_year,
 
         "sale_month":
-            sale_month
+            sale_month,
+
+        "sale_year_fe":
+            str(sale_year)
     }])
 
     house = house[MODEL_FEATURES]

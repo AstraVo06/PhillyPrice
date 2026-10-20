@@ -46,7 +46,7 @@ with left:
         caption("Share of the Random Forest's splits, weighted by how much each one improved the prediction "
                    "(feature importance). Location combines distance from City Hall, ZIP code, and the census "
                    "tract's income, rent, and share of owners. Market timing combines the mortgage rate, month, "
-                   "and year of sale.")
+                   "and year of sale (a yearly trend plus a separate effect for each year).")
 with right:
     ui.checklist([
         f"<b>Location comes first.</b> Distance from City Hall alone is {by_input['Distance from City Hall']:.0f}% "
@@ -139,6 +139,6 @@ ui.cards([
      "the spot in that range."),
 ])
 caption("These are patterns in past sales, not proof of cause. On sales it hadn't seen (2025–26), the model "
-           "explained about 41% of price differences and missed by $104,456 on average. Full details on "
+           "explained about 41% of price differences and missed by $99,888 on average. Full details on "
            "How it works.")
 ui.footer()

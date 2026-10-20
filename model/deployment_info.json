@@ -12,7 +12,8 @@
         "mortgage_rate",
         "distance_city_hall_miles",
         "sale_year",
-        "sale_month"
+        "sale_month",
+        "sale_year_fe"
     ],
     "user_inputs": [
         "total_livable_area",

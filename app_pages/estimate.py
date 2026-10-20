@@ -274,6 +274,9 @@ if (p !== null) {{
 </script>"""
 
 
+WHAT_IF_KEYS = ("beds", "baths", "sqft", "condition", "year")
+
+
 @st.fragment
 def what_if(result):
     """Live sliders: only this section reruns, so the price updates almost instantly."""
@@ -284,10 +287,13 @@ def what_if(result):
             or any(f"wi_{key}" not in st.session_state for key in base)):
         st.session_state["whatif_for"] = marker
         st.session_state["wi_beds"], st.session_state["wi_baths"] = base["beds"], base["baths"]
-        st.session_state["wi_sqft"] = min(max(int(round(base["sqft"] / 50) * 50), 400), 5000)
+        st.session_state["wi_sqft"] = min(max(int(round(base["sqft"])), 400), 5000)
         st.session_state["wi_condition"] = base["condition"]
         st.session_state["wi_year"] = min(max(base["year"], 1800), datetime.date.today().year)
         st.session_state["wi_last"] = result["price"]
+        # Slider limits can round the home's details (e.g. 7 bedrooms shows as 6+), so remember the
+        # starting position: while nothing has moved, the what-if price is the estimate itself.
+        st.session_state["wi_start"] = tuple(st.session_state[f"wi_{key}"] for key in WHAT_IF_KEYS)
 
     ui.section("What if?", "Drag the sliders to see how a change would move the estimate. "
                "Nothing is saved, so explore freely.", anchor="whatif")
@@ -298,13 +304,16 @@ def what_if(result):
                              format_func=lambda n: "6+" if n == 6 else str(n))
             st.select_slider("Bathrooms", options=[1, 2, 3, 4], key="wi_baths",
                              format_func=lambda n: "4+" if n == 4 else str(n))
-            st.slider("Living area (sq ft)", 400, 5000, step=50, key="wi_sqft")
+            st.slider("Living area (sq ft)", 400, 5000, step=1, key="wi_sqft")
             st.select_slider("Condition inside", options=list(CONDITION_CHOICES), key="wi_condition",
                              format_func=lambda c: CONDITION_CHOICES[c])
             st.slider("Year built", 1800, datetime.date.today().year, key="wi_year")
-        new_price = ins.quick_price(location, st.session_state["wi_sqft"], st.session_state["wi_beds"],
-                                    st.session_state["wi_baths"], st.session_state["wi_condition"],
-                                    st.session_state["wi_year"])
+        if tuple(st.session_state[f"wi_{key}"] for key in WHAT_IF_KEYS) == st.session_state.get("wi_start"):
+            new_price = result["price"]
+        else:
+            new_price = ins.quick_price(location, st.session_state["wi_sqft"], st.session_state["wi_beds"],
+                                        st.session_state["wi_baths"], st.session_state["wi_condition"],
+                                        st.session_state["wi_year"])
         pct, count = ins.zip_percentile(location["zip_code"], new_price)
         with readout:
             components.html(counter_html(st.session_state.get("wi_last", result["price"]), new_price,

@@ -81,7 +81,8 @@ def _street_view_jpeg(lat, lon, size, key):
     try:
         meta = requests.get(f"{STREET_VIEW}/metadata", params={"location": location, "radius": 40,
                                                                "source": "outdoor", "key": key}, timeout=8).json()
-        if meta.get("status") != "OK":
+        # Only Google's own Street View cars: photo spheres uploaded by people are often far from the house.
+        if meta.get("status") != "OK" or "Google" not in meta.get("copyright", ""):
             return None
         # Stand where the street photo was taken and turn to face the home, zoomed in on its front.
         cam = meta["location"]

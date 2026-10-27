@@ -143,8 +143,9 @@ def _street_view_jpeg(lat, lon, size, key, address=None):
         if target is None:     # no street to go by: look at the home's map point
             target = ((lon - cam["lng"]) * 85_000, (lat - cam["lat"]) * 111_000)
         heading = (math.degrees(math.atan2(target[0], target[1])) + 360) % 360
-        # Zoom so about 12 m of front fits: one rowhome plus a little of each neighbor.
-        fov = min(90, max(40, 2 * math.degrees(math.atan(6 / max(math.hypot(*target), 1)))))
+        # Zoom so about 16 m of front fits: the home in the middle with its neighbors, never tighter than 60 degrees
+        # (a tight zoom from far down the block shows only side walls).
+        fov = min(90, max(60, 2 * math.degrees(math.atan(8 / max(math.hypot(*target), 1)))))
         image = requests.get(STREET_VIEW, params={"size": size, "pano": meta["pano_id"], "heading": f"{heading:.1f}",
                                                   "fov": f"{fov:.0f}", "pitch": 10, "key": key}, timeout=12)
         return image.content if image.ok else None

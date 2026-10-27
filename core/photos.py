@@ -86,8 +86,11 @@ def _street_view_jpeg(lat, lon, size, key):
         # Stand where the street photo was taken and turn to face the home, zoomed in on its front.
         cam = meta["location"]
         heading = _bearing(cam["lat"], cam["lng"], lat, lon)
+        # Zoom so about 18 m of street front fits: wide on narrow streets, tighter when the camera is farther away.
+        meters = math.hypot((lat - cam["lat"]) * 111_000, (lon - cam["lng"]) * 85_000)
+        fov = min(90, max(50, 2 * math.degrees(math.atan(9 / max(meters, 1)))))
         image = requests.get(STREET_VIEW, params={"size": size, "pano": meta["pano_id"], "heading": f"{heading:.1f}",
-                                                  "fov": 60, "pitch": 8, "key": key}, timeout=12)
+                                                  "fov": f"{fov:.0f}", "pitch": 8, "key": key}, timeout=12)
         return image.content if image.ok else None
     except (requests.RequestException, ValueError, KeyError):
         return None

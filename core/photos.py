@@ -10,8 +10,11 @@ Photos are fetched on the server, so keys never appear in the page.
 
 import base64
 import math
+import re
 import string
 
+import numpy as np
+import pandas as pd
 import requests
 import streamlit as st
 
@@ -89,28 +92,61 @@ def street_view_jpeg(lat, lon, size="480x300", address=None):
     return _street_view_jpeg(lat, lon, size, key, address) if key else None
 
 
+@st.cache_resource(show_spinner=False)
+def _street_rows():
+    """Every home's location, grouped by street and side of the street (odd or even house numbers)."""
+    from core import insights as ins            # here, not at the top, so the two modules don't import each other
+    homes = ins.load_homes()
+    parts = homes["address"].str.extract(r"^(\d+)\s+(.+)$")
+    rows = pd.DataFrame({"num": pd.to_numeric(parts[0], errors="coerce"), "street": parts[1],
+                         "lat": homes["lat"], "lon": homes["lon"]}).dropna()
+    return {key: g[["num", "lat", "lon"]].to_numpy()
+            for key, g in rows.groupby([rows["street"], rows["num"] % 2])}
+
+
+def _front_target(address, lat, lon, cam_lat, cam_lon):
+    """Where the camera should look: the home's front wall, worked out from the line of homes on its side of the
+    street. Returns (east, north) in meters from the camera, or None when the street can't be worked out."""
+    m = re.match(r"\s*(\d+)\s+([^,]+)", address or "")
+    if not m:
+        return None
+    num, street = int(m.group(1)), m.group(2).strip().upper()
+    rows = _street_rows().get((street, num % 2))
+    if rows is None:
+        return None
+    near = rows[np.abs(rows[:, 0] - num) <= 40]
+    if len(near) < 3:
+        return None
+    xy = np.column_stack([(near[:, 2] - lon) * 85_000, (near[:, 1] - lat) * 111_000])   # meters, home at 0,0
+    along_dir = np.linalg.svd(xy - xy.mean(axis=0))[2][0]                              # which way the street runs
+    across_dir = np.array([-along_dir[1], along_dir[0]])
+    cam = np.array([(cam_lon - lon) * 85_000, (cam_lat - lat) * 111_000])
+    along, across = -cam @ along_dir, -cam @ across_dir   # home position seen from the camera
+    if abs(across) < 2:
+        return None
+    # The home's map point sits in the middle of the lot; its front wall is a few meters closer to the street.
+    front = math.copysign(min(max(abs(across) - 7, 3.5), 10), across)
+    target = along * along_dir + front * across_dir
+    return float(target[0]), float(target[1])
+
+
 @st.cache_data(show_spinner=False, ttl=7 * 24 * 3600, max_entries=5000)
 def _street_view_jpeg(lat, lon, size, key, address=None):
-    # Aim at the street address when we have one: Google places it at the home's front door, which is more exact
-    # than the middle of the lot (on narrow rowhomes the middle can line up with the house next door).
-    target = address or f"{lat:.6f},{lon:.6f}"
     try:
-        meta = requests.get(f"{STREET_VIEW}/metadata", params={"location": target, "radius": 40,
+        meta = requests.get(f"{STREET_VIEW}/metadata", params={"location": f"{lat:.6f},{lon:.6f}", "radius": 40,
                                                                "source": "outdoor", "key": key}, timeout=8).json()
         # Only Google's own Street View cars: photo spheres uploaded by people are often far from the house.
         if meta.get("status") != "OK" or "Google" not in meta.get("copyright", ""):
             return None
         cam = meta["location"]
-        # Zoom so about 18 m of street front fits: wide on narrow streets, tighter when the camera is farther away.
-        meters = math.hypot((lat - cam["lat"]) * 111_000, (lon - cam["lng"]) * 85_000)
-        fov = f"{min(90, max(50, 2 * math.degrees(math.atan(9 / max(meters, 1))))):.0f}"
-        if address:
-            # Without a heading, Google turns the camera toward the address it was given.
-            params = {"size": size, "location": address, "radius": 40, "source": "outdoor", "fov": fov, "pitch": 8}
-        else:
-            heading = _bearing(cam["lat"], cam["lng"], lat, lon)
-            params = {"size": size, "pano": meta["pano_id"], "heading": f"{heading:.1f}", "fov": fov, "pitch": 8}
-        image = requests.get(STREET_VIEW, params={**params, "key": key}, timeout=12)
+        target = _front_target(address, lat, lon, cam["lat"], cam["lng"]) if address else None
+        if target is None:     # no street to go by: look at the home's map point
+            target = ((lon - cam["lng"]) * 85_000, (lat - cam["lat"]) * 111_000)
+        heading = (math.degrees(math.atan2(target[0], target[1])) + 360) % 360
+        # Zoom so about 12 m of front fits: one rowhome plus a little of each neighbor.
+        fov = min(90, max(40, 2 * math.degrees(math.atan(6 / max(math.hypot(*target), 1)))))
+        image = requests.get(STREET_VIEW, params={"size": size, "pano": meta["pano_id"], "heading": f"{heading:.1f}",
+                                                  "fov": f"{fov:.0f}", "pitch": 10, "key": key}, timeout=12)
         return image.content if image.ok else None
     except (requests.RequestException, ValueError, KeyError):
         return None

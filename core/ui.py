@@ -372,6 +372,33 @@ h1, h2, h3, h4 {{ color: {INK}; letter-spacing: -0.02em; }}
 /* What-if */
 .st-key-whatif {{ background: #fff; border: 1px solid {LINE}; border-radius: 22px; padding: 22px 26px;
                  box-shadow: 0 10px 30px rgba(14,31,61,0.07); }}
+
+/* Phones */
+@media (max-width: 640px) {{
+    /* Top bar: logo on its own row, then every link wraps onto short rows instead of running off the screen */
+    .st-key-navbar {{ position: relative; padding: 8px 0 6px; }}
+    .st-key-navbar [data-testid="stHorizontalBlock"] {{ flex-wrap: wrap !important; overflow-x: visible; row-gap: 0; }}
+    .st-key-navbar [data-testid="stColumn"]:first-child {{ flex: 1 0 100% !important; }}
+    .st-key-navbar [data-testid="stColumn"]:nth-child(2) {{ display: none; }}
+    .st-key-navbar [data-testid="stPageLink"] a {{ padding: 4px 8px; }}
+    .st-key-navbar [data-testid="stPageLink"] a p {{ font-size: 0.86rem; }}
+    .st-key-nav_logo [data-testid="stPageLink"] a {{ padding-left: 0; }}
+    .st-key-nav_account button {{ min-height: 0; padding: 3px 12px; }}
+
+    /* Home hero: room for the stacked search box and the lines under it */
+    .pp-hero {{ padding: 60px 18px 110px; min-height: 0; }}
+    .pp-hero.pp-home {{ padding: 46px 18px 270px; min-height: 0; }}
+    [data-testid="stLayoutWrapper"]:has(> .st-key-search_card) {{ margin-top: -250px; }}
+    .st-key-search_card {{ border-radius: 24px; padding: 8px 10px 10px 14px; }}
+    .st-key-search_card [data-testid="stFormSubmitButton"] button {{ min-height: 52px; }}
+    .pp-trust {{ font-size: 0.85rem; padding: 0 6px; }}
+
+    /* Section tabs on an estimate: wrap onto two lines */
+    .pp-tabs {{ flex-wrap: wrap; gap: 2px 18px; overflow-x: visible; }}
+    .pp-tabs a {{ padding: 7px 0; font-size: 0.9rem; }}
+
+    .st-key-details_card, .st-key-bydetails_card, .st-key-whatif {{ padding: 18px 16px 6px; }}
+}}
 </style>
 """
 

@@ -165,10 +165,13 @@ and the number behind the color. Pick an area on the left to highlight it.
                 hovertemplate=f"<b>%{{customdata[0]}}</b><br>{metric}: <b>%{{customdata[1]}}</b><br>%{{customdata[2]}}<extra></extra>"))
         fig.update_layout(height=MAP_HEIGHT, margin=dict(l=0, r=0, t=0, b=0),
                           hoverlabel=dict(bgcolor=ui.DEEP, font=dict(color="white", family="Public Sans")),
-                          coloraxis_colorbar=dict(title="", len=0.5, thickness=14, x=0.99, xanchor="right",
+                          coloraxis_colorbar=dict(title="", orientation="h", len=0.7, thickness=10, x=0.5,
+                                                  xanchor="center", y=0.03, yanchor="bottom", ypad=6, xpad=10,
+                                                  tickfont=dict(size=11, color=ui.INK),
                                                   bgcolor="rgba(255,255,255,0.85)",
-                                                  tickprefix="$" if unit == "$" else "",
-                                                  ticksuffix="%" if unit == "%" else "", tickformat=",.0f"))
+                                                  tickprefix="$" if unit == "$" else "", nticks=4,
+                                                  ticksuffix="%" if unit == "%" else "",
+                                                  tickformat="~s" if unit == "$" else ",.0f"))
         st.plotly_chart(fig, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
     if is_sales:
         st.caption(f"Blank areas had fewer than {MIN_SALES} sales in the years picked. Sales where several homes "
@@ -178,15 +181,21 @@ ui.section("Most and least expensive areas", "Typical single-family sale price b
            "Each ZIP is named for its main neighborhoods.")
 zips = ins.load_zip_stats()
 ranked = zips[zips["sales"] >= 100].sort_values("median_price")
+
+
+def short_zip_label(zip_code):
+    """Main neighborhood only, so the names fit beside the bars on a phone: 'Washington Square West · 19107'."""
+    name, _, code = ins.zip_label(zip_code).rpartition(" · ")
+    return f"{name.split(' & ')[0]} · {code}" if name else code
 left, right = st.columns(2, gap="large")
 for col, title, rows, color in [(left, "Most expensive", ranked.tail(10).iloc[::-1], ui.BLUE),
                                 (right, "Most affordable", ranked.head(10), ui.GOLD)]:
     bar = go.Figure(go.Bar(
-        x=rows["median_price"], y=rows["zip_code"].map(ins.zip_label), orientation="h", marker_color=color,
+        x=rows["median_price"], y=rows["zip_code"].map(short_zip_label), orientation="h", marker_color=color,
         text=rows["median_price"].map(money), textposition="outside", cliponaxis=False,
         hovertemplate="%{y}<br>%{text}<extra></extra>"))
     bar.update_layout(title=dict(text=title, x=0), height=430, margin=dict(l=0, r=80, t=40, b=0),
-                      yaxis=dict(autorange="reversed", type="category"), xaxis=dict(visible=False),
+                      yaxis=dict(autorange="reversed", type="category", automargin=True), xaxis=dict(visible=False),
                       plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
     col.plotly_chart(bar, width="stretch", config={"displayModeBar": False, "scrollZoom": False})
 

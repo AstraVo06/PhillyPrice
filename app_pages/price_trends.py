@@ -22,7 +22,7 @@ if metric == MORTGAGE:
     for point, label in [(low, "Lowest"), (high, "Highest")]:
         fig.add_annotation(x=point["month"], y=point["mortgage_rate"], text=f"{label}: {point['mortgage_rate']:.2f}%",
                            showarrow=True, arrowhead=0, ax=0, ay=-30, font=dict(color=ui.BLUE, size=13))
-    fig.update_layout(title=dict(text="30-year fixed mortgage rate, 2019 to today", x=0.5, font=dict(size=24)),
+    fig.update_layout(title=dict(text="30-year mortgage rate", x=0.02, xanchor="left", font=dict(size=20)),
                       height=520, margin=dict(l=10, r=30, t=70, b=10), yaxis=dict(ticksuffix="%", gridcolor=ui.LINE),
                       plot_bgcolor="#fff", paper_bgcolor="#fff")
     with st.container(border=True):
@@ -38,6 +38,7 @@ else:
         st.info("Pick at least one area to see the chart.")
     else:
         data = ins.area_trend(metric, tuple(areas))
+        YEARS = sorted(int(y) for y in data["year"].unique())
         is_money = metric != "Number of sales"
         fmt = (lambda v: money(v)) if is_money else (lambda v: f"{v:,.0f}")
         fig = go.Figure()
@@ -46,14 +47,15 @@ else:
                 x=rows["year"], y=rows["value"], mode="lines+markers+text", name=area,
                 line=dict(color=color, width=3), marker=dict(size=8),
                 text=[fmt(v) if i in (0, len(rows) - 1) else "" for i, v in enumerate(rows["value"])],
-                textposition="top center", textfont=dict(color=color, size=12),
+                textposition="top center", textfont=dict(color=color, size=12), cliponaxis=False,
                 hovertemplate=f"{area} %{{x}}: %{{customdata}}<extra></extra>",
                 customdata=[fmt(v) for v in rows["value"]]))
-        fig.update_layout(title=dict(text=f"{metric} by year", x=0.5, font=dict(size=22)),
-                          height=540, margin=dict(l=10, r=30, t=80, b=10),
-                          xaxis=dict(dtick=1, gridcolor="#fff"),
+        fig.update_layout(title=dict(text=f"{metric} by year", x=0.02, xanchor="left", font=dict(size=20)),
+                          height=540, margin=dict(l=10, r=60, t=60, b=10),
+                          xaxis=dict(tickvals=YEARS, ticktext=[str(y) if y in (YEARS[0], YEARS[-1]) else f"'{y % 100}"
+                                                             for y in YEARS], tickangle=0, gridcolor="#fff"),
                           yaxis=dict(tickprefix="$" if is_money else "", tickformat=",.0f", gridcolor=ui.LINE),
-                          legend=dict(orientation="h", y=1.08, x=0.5, xanchor="center"),
+                          legend=dict(orientation="h", y=-0.08, yanchor="top", x=0.5, xanchor="center"),
                           plot_bgcolor="#fff", paper_bgcolor="#fff")
         with st.container(border=True):
             st.plotly_chart(fig, width="stretch", config={"displayModeBar": False, "scrollZoom": False})

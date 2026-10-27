@@ -69,22 +69,27 @@ def mapillary_jpeg(lat, lon):
         return None
 
 
-@st.cache_data(show_spinner=False, ttl=7 * 24 * 3600, max_entries=5000)
 def street_view_jpeg(lat, lon, size="480x300"):
-    """Street View photo bytes facing the home, or None when there is no key or no imagery."""
+    """Street View photo bytes looking straight at the home, or None when there is no key or no imagery."""
     key = api_key()
-    if not key:
-        return None
+    return _street_view_jpeg(lat, lon, size, key) if key else None
+
+
+@st.cache_data(show_spinner=False, ttl=7 * 24 * 3600, max_entries=5000)
+def _street_view_jpeg(lat, lon, size, key):
     location = f"{lat:.6f},{lon:.6f}"
     try:
-        meta = requests.get(f"{STREET_VIEW}/metadata", params={"location": location, "source": "outdoor", "key": key},
-                            timeout=8).json()
+        meta = requests.get(f"{STREET_VIEW}/metadata", params={"location": location, "radius": 40,
+                                                               "source": "outdoor", "key": key}, timeout=8).json()
         if meta.get("status") != "OK":
             return None
-        image = requests.get(STREET_VIEW, params={"size": size, "location": location, "fov": 80,
-                                                  "source": "outdoor", "key": key}, timeout=12)
+        # Stand where the street photo was taken and turn to face the home, zoomed in on its front.
+        cam = meta["location"]
+        heading = _bearing(cam["lat"], cam["lng"], lat, lon)
+        image = requests.get(STREET_VIEW, params={"size": size, "pano": meta["pano_id"], "heading": f"{heading:.1f}",
+                                                  "fov": 60, "pitch": 8, "key": key}, timeout=12)
         return image.content if image.ok else None
-    except requests.RequestException:
+    except (requests.RequestException, ValueError, KeyError):
         return None
 
 

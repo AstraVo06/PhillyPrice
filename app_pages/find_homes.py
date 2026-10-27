@@ -95,7 +95,7 @@ with results:
         wanted = st.session_state["find_shown"]
         pool = found.head(wanted * 3).copy()
         with st.spinner("Loading home photos…"):
-            pool["has_photo"] = photos.has_photos(list(zip(pool["lat"], pool["lon"])))
+            pool["has_photo"] = photos.has_photos(list(zip(pool["lat"], pool["lon"], map(photos.street_address, pool["address"], pool["zip_code"]))))
         shown = pool.sort_values("has_photo", ascending=False, kind="stable").head(wanted)
         for start in range(0, len(shown), 3):
             cols = st.columns(3)
@@ -105,7 +105,7 @@ with results:
                     # The whole card is clickable (an invisible button covers it), as is the button below it.
                     with st.container(key=f"compcard_find_{home.Index}"):
                         st.markdown(
-                            f'<div class="pp-comp">{photos.picture_html(home.lat, home.lon, 150)}'
+                            f'<div class="pp-comp">{photos.picture_html(home.lat, home.lon, 150, photos.street_address(home.address, home.zip_code))}'
                             f'<div class="body"><div class="price">Sold {money(home.sale_price)}</div>'
                             f'<div class="addr">{string.capwords(home.address.lower())}</div>'
                             f'<div class="sub">{home.sale_date:%b %Y} · {ins.zip_label(home.zip_code)}</div>'

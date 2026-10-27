@@ -36,7 +36,7 @@ else:
                 saved_on = datetime.datetime.fromisoformat(home["saved_at"][:19])
                 with col:
                     st.markdown(
-                        f'<div class="pp-comp">{photos.picture_html(home["lat"], home["lon"], 160)}<div class="body">'
+                        f'<div class="pp-comp">{photos.picture_html(home["lat"], home["lon"], 160, photos.street_address(home["address"]))}<div class="body">'
                         f'<div class="price">{money(home["estimate"])}</div>'
                         f'<div class="addr">{home["address"]}</div>'
                         f'<div class="sub">Likely range {money_short(home["low"])} – {money_short(home["high"])} · '

@@ -10,6 +10,7 @@ Photos are fetched on the server, so keys never appear in the page.
 
 import base64
 import math
+import string
 
 import requests
 import streamlit as st
@@ -69,29 +70,47 @@ def mapillary_jpeg(lat, lon):
         return None
 
 
-def street_view_jpeg(lat, lon, size="480x300"):
+def street_address(address, zip_code=None):
+    """'2426 S CHADWICK ST' -> '2426 S Chadwick St, Philadelphia, PA 19145', for Google to find the front door."""
+    if not isinstance(address, str) or not address.strip():
+        return None
+    text = string.capwords(address.strip().lower())
+    if "philadelphia" in text.lower():
+        return text
+    try:
+        return f"{text}, Philadelphia, PA {int(float(zip_code))}"
+    except (TypeError, ValueError):
+        return f"{text}, Philadelphia, PA"
+
+
+def street_view_jpeg(lat, lon, size="480x300", address=None):
     """Street View photo bytes looking straight at the home, or None when there is no key or no imagery."""
     key = api_key()
-    return _street_view_jpeg(lat, lon, size, key) if key else None
+    return _street_view_jpeg(lat, lon, size, key, address) if key else None
 
 
 @st.cache_data(show_spinner=False, ttl=7 * 24 * 3600, max_entries=5000)
-def _street_view_jpeg(lat, lon, size, key):
-    location = f"{lat:.6f},{lon:.6f}"
+def _street_view_jpeg(lat, lon, size, key, address=None):
+    # Aim at the street address when we have one: Google places it at the home's front door, which is more exact
+    # than the middle of the lot (on narrow rowhomes the middle can line up with the house next door).
+    target = address or f"{lat:.6f},{lon:.6f}"
     try:
-        meta = requests.get(f"{STREET_VIEW}/metadata", params={"location": location, "radius": 40,
+        meta = requests.get(f"{STREET_VIEW}/metadata", params={"location": target, "radius": 40,
                                                                "source": "outdoor", "key": key}, timeout=8).json()
         # Only Google's own Street View cars: photo spheres uploaded by people are often far from the house.
         if meta.get("status") != "OK" or "Google" not in meta.get("copyright", ""):
             return None
-        # Stand where the street photo was taken and turn to face the home, zoomed in on its front.
         cam = meta["location"]
-        heading = _bearing(cam["lat"], cam["lng"], lat, lon)
         # Zoom so about 18 m of street front fits: wide on narrow streets, tighter when the camera is farther away.
         meters = math.hypot((lat - cam["lat"]) * 111_000, (lon - cam["lng"]) * 85_000)
-        fov = min(90, max(50, 2 * math.degrees(math.atan(9 / max(meters, 1)))))
-        image = requests.get(STREET_VIEW, params={"size": size, "pano": meta["pano_id"], "heading": f"{heading:.1f}",
-                                                  "fov": f"{fov:.0f}", "pitch": 8, "key": key}, timeout=12)
+        fov = f"{min(90, max(50, 2 * math.degrees(math.atan(9 / max(meters, 1))))):.0f}"
+        if address:
+            # Without a heading, Google turns the camera toward the address it was given.
+            params = {"size": size, "location": address, "radius": 40, "source": "outdoor", "fov": fov, "pitch": 8}
+        else:
+            heading = _bearing(cam["lat"], cam["lng"], lat, lon)
+            params = {"size": size, "pano": meta["pano_id"], "heading": f"{heading:.1f}", "fov": fov, "pitch": 8}
+        image = requests.get(STREET_VIEW, params={**params, "key": key}, timeout=12)
         return image.content if image.ok else None
     except (requests.RequestException, ValueError, KeyError):
         return None
@@ -113,10 +132,10 @@ def map_thumbnail_style(lat, lon, zoom=18):
             "background-size:256px 256px;background-repeat:no-repeat;")
 
 
-def photo_bytes(lat, lon):
+def photo_bytes(lat, lon, address=None):
     """(photo bytes, credit HTML) from Street View or Mapillary, or (None, "")."""
     lat, lon = round(float(lat), 6), round(float(lon), 6)
-    photo = street_view_jpeg(lat, lon)
+    photo = street_view_jpeg(lat, lon, address=address)
     if photo:
         return photo, ""
     photo = mapillary_jpeg(lat, lon)
@@ -124,15 +143,15 @@ def photo_bytes(lat, lon):
 
 
 def has_photos(points):
-    """For a list of (lat, lon), whether each home has a photo. Looks them up in parallel."""
+    """For a list of (lat, lon) or (lat, lon, address), whether each home has a photo. Looks them up in parallel."""
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=12) as pool:
         return list(pool.map(lambda p: photo_bytes(*p)[0] is not None, points))
 
 
-def picture_html(lat, lon, height=150):
+def picture_html(lat, lon, height=150, address=None):
     """HTML block with the home's photo, or a pinned map when no photo is available."""
-    photo, credit = photo_bytes(lat, lon)
+    photo, credit = photo_bytes(lat, lon, address)
     if photo:
         encoded = base64.b64encode(photo).decode()
         return (f'<div class="pp-pic" style="height:{height}px">'

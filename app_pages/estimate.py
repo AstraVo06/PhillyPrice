@@ -164,7 +164,7 @@ def home_cards(rows, records, prefix):
             place = ins.tract_label(m["GEOID"]).split(" · ")[0] if isinstance(m["GEOID"], str) else ""
             with col, st.container(key=f"compcard_{prefix}_{i}"):
                 st.markdown(
-                    f'<div class="pp-comp">{photos.picture_html(m["lat"], m["lon"], 150)}<div class="body">'
+                    f'<div class="pp-comp">{photos.picture_html(m["lat"], m["lon"], 150, photos.street_address(m["address"], m.get("zip_code")))}<div class="body">'
                     f'<div class="price">{sold}</div>'
                     f'<div class="addr">{nice_address(m["address"])}</div>'
                     f'<div class="sub">{when}{place or zip_text}</div>'
@@ -422,7 +422,7 @@ if lookup in ("units", "pick"):
         note(f"No house number starting with <b>{number}</b> on this street.")
     else:
         with st.spinner("Loading home photos…"):
-            photos.has_photos(list(zip(shown["lat"], shown["lon"])))  # fetch in parallel, cached for the cards
+            photos.has_photos(list(zip(shown["lat"], shown["lon"], map(photos.street_address, shown["address"], shown["zip_code"]))))  # fetch in parallel, cached for the cards
         home_cards(shown, st.session_state["matches"], "pick")
         left = len(matches) - len(shown)
         if left > 0 and st.button(f"Show more homes ({left:,} left)", width="stretch"):
@@ -511,7 +511,8 @@ if result:
                   if ins.RANGE_METHOD == "price_band" else "")
     photo_col, est_col = st.columns([1.25, 1], gap="large")
     with photo_col:
-        st.markdown(f'<div class="pp-hero-pic">{photos.picture_html(location["latitude"], location["longitude"], 360)}</div>',
+        st.markdown(f'<div class="pp-hero-pic">{photos.picture_html(location["latitude"], location["longitude"], 360,
+                                                                  photos.street_address(title))}</div>',
                     unsafe_allow_html=True)
     with est_col:
         st.markdown(f"""
@@ -607,7 +608,7 @@ if result:
         for i, (col, c) in enumerate(zip(columns, comps.itertuples())):
             with col, st.container(key=f"compcard_{i}"):
                 st.markdown(
-                    f'<div class="pp-comp">{photos.picture_html(c.lat, c.lon, 140)}'
+                    f'<div class="pp-comp">{photos.picture_html(c.lat, c.lon, 140, photos.street_address(c.address, c.zip_code))}'
                     f'<div class="body"><div class="price">Sold {money(c.sale_price)}</div>'
                     f'<div class="addr">{nice_address(c.address)}</div>'
                     f'<div class="sub">{c.sale_date:%b %Y} · {c.distance_miles:.2f} mi away</div>'
@@ -681,7 +682,7 @@ if not result and lookup not in ("units", "pick", "notfound"):
                anchor="explore")
     featured = ins.featured_homes()
     with st.spinner("Loading home photos…"):
-        photos.has_photos(list(zip(featured["lat"], featured["lon"])))
+        photos.has_photos(list(zip(featured["lat"], featured["lon"], map(photos.street_address, featured["address"], featured["zip_code"]))))
     home_cards(featured, featured.to_dict("records"), "featured")
 
 ui.footer()
